@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="km" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medi-LMS | សាលារៀនវេជ្ជសាស្ត្រឌីជីថល</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- SheetJS (XLSX) Library -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // 🟢 គាំទ្រ Dark Mode
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Kantumruy Pro"', '"Inter"', 'sans-serif'] },
+                    colors: { brand: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 900: '#312e81' } }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 antialiased flex flex-col min-h-screen transition-colors duration-300">
+
+    <!-- HEADER NAVIGATION -->
+    <header class="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2">
+            <!-- Logo -->
+            <div class="flex items-center gap-2 cursor-pointer shrink-0" id="btn-logo">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white font-bold">M</div>
+                <span class="font-bold text-base text-slate-900 dark:text-white">Medi-LMS</span>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="flex flex-wrap items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs sm:text-sm">
+                <button id="nav-home" class="nav-btn px-2.5 py-1.5 rounded-lg font-semibold bg-white dark:bg-slate-700 text-brand-600 dark:text-indigo-400 shadow-sm">ទំព័រដើម</button>
+                <button id="nav-lessons" class="nav-btn px-2.5 py-1.5 rounded-lg font-semibold text-slate-600 dark:text-slate-300">មេរៀនវីដេអូ</button>
+                <button id="nav-qcm" class="nav-btn px-2.5 py-1.5 rounded-lg font-semibold text-slate-600 dark:text-slate-300">ប្រឡង QCM</button>
+                <button id="nav-admin" class="nav-btn hidden px-2.5 py-1.5 rounded-lg font-semibold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/50">⚙️ Admin Panel</button>
+            </nav>
+
+            <!-- Auth User Info & Dark Mode Toggle -->
+            <div class="flex items-center gap-2 shrink-0">
+                <div id="auth-guest-view" class="flex gap-1.5">
+                    <button id="btn-open-login" class="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">ចូលប្រព័ន្ធ</button>
+                    <!-- <button id="btn-open-register" class="px-3 py-1.5 text-xs font-semibold text-white bg-brand-600 rounded-xl">ចុះឈ្មោះ</button> -->
+                </div>
+                <div id="auth-user-view" class="hidden flex items-center gap-1.5">
+                    <span id="user-display-name" class="text-xs font-bold text-slate-700 dark:text-slate-300 max-w-[70px] sm:max-w-none truncate"></span>
+                    <span id="user-role-badge" class="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">STUDENT</span>
+                    <button id="btn-logout" class="p-1 text-slate-500 hover:text-red-600 dark:text-slate-400"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+                </div>
+
+                <!-- 🟢 ប៊ូតុង Dark Mode Toggle -->
+                <button id="btn-theme-toggle" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition flex items-center justify-center" title="ប្តូរ Dark/Light Mode">
+                    <span id="theme-icon" class="text-base">🌙</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT SECTIONS -->
+    <main class="flex-grow flex flex-col">
+        
+        <!-- 1. HOME TAB -->
+        <section id="tab-home" class="tab-content flex-grow bg-brand-900 text-white px-4 py-16 sm:py-24 flex flex-col justify-center">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-3xl sm:text-5xl font-extrabold mb-4 sm:mb-6 leading-tight">សាលារៀនវេជ្ជសាស្ត្រឌីជីថល</h1>
+                <p class="text-sm sm:text-lg text-slate-300 max-w-2xl mx-auto mb-12">រៀនសូត្រតាមរយៈវីដេអូមេរៀន និងប្រឡងល្បងសមត្ថភាព QCM ได้គ្រប់ពេលវេលា គ្រប់ទីកន្លែង</p>
+                
+                <!-- Feature Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                    <div class="bg-white/10 backdrop-blur border border-white/20 p-6 rounded-2xl hover:bg-white/15 transition cursor-pointer" onclick="document.getElementById('nav-lessons').click()">
+                        <div class="w-12 h-12 bg-indigo-500/30 rounded-xl flex items-center justify-center mb-4 text-2xl">📚</div>
+                        <h3 class="text-lg font-bold mb-2">មេរៀនវីដេអូ</h3>
+                        <p class="text-sm text-slate-300">ទស្សនាវីដេអូបង្រៀនពីសាស្ត្រាចារ្យដែលបានរៀបចំឡើងយ៉ាងលម្អិត។</p>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur border border-white/20 p-6 rounded-2xl hover:bg-white/15 transition cursor-pointer" onclick="document.getElementById('nav-qcm').click()">
+                        <div class="w-12 h-12 bg-emerald-500/30 rounded-xl flex items-center justify-center mb-4 text-2xl">📝</div>
+                        <h3 class="text-lg font-bold mb-2">ប្រឡង QCM</h3>
+                        <p class="text-sm text-slate-300">សាកល្បងសមត្ថភាពខ្លួនឯងជាមួយសំណួរ QCM ពីគ្រប់មុខវិជ្ជា។</p>
+                    </div>
+                    <!-- កាតតាមដានលទ្ធផលនៅលើទំព័រដើម -->
+                    <div id="card-track-result" class="bg-white/10 backdrop-blur border border-white/20 p-6 rounded-2xl hover:bg-white/15 transition cursor-pointer">
+                        <div class="w-12 h-12 bg-amber-500/30 rounded-xl flex items-center justify-center mb-4 text-2xl">🎯</div>
+                        <h3 class="text-lg font-bold mb-2">តាមដានលទ្ធផល</h3>
+                        <p class="text-sm text-slate-300">ដឹងពីពិន្ទុ និងកំហុសឆ្គងរបស់អ្នកភ្លាមៗ ក្រោយបញ្ចប់ការប្រឡង។</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. LESSONS TAB -->
+        <section id="tab-lessons" class="tab-content hidden flex-grow max-w-7xl mx-auto w-full px-4 py-6 sm:py-8">
+            <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-slate-900 dark:text-white">📚 បញ្ជីមេរៀនវីដេអូ</h2>
+            
+            <!-- ប្រអប់សម្រាប់ដាក់ Folder មេ -->
+            <div id="lesson-folders-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+                <!-- Folder មេនឹងបង្ហាញនៅទីនេះ -->
+            </div>
+
+            <!-- ប្រអប់សម្រាប់ដាក់វីដេអូ -->
+            <div id="lesson-videos-view" class="hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <button id="btn-back-to-folders" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl font-bold text-slate-700 dark:text-slate-300 transition">← ថយក្រោយ</button>
+                        <h2 id="current-folder-title" class="text-xl font-bold text-slate-900 dark:text-white">Basic Anatomy</h2>
+                    </div>
+                    
+                    <button id="btn-open-add-lesson-modal" class="admin-only hidden px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold text-sm shadow-sm transition flex items-center gap-2">
+                        ➕ បន្ថែមវីដេអូ
+                    </button>
+                </div>
+                
+                <div id="lessons-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- វីដេអូនឹងបង្ហាញនៅទីនេះ -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. QCM EXAM TAB -->
+        <section id="tab-qcm" class="tab-content hidden flex-grow max-w-7xl mx-auto w-full px-4 py-6 sm:py-8">
+            <div id="qcm-subject-view">
+                
+                <!-- កាតសាលារៀន -->
+                <div id="school-card-view" class="max-w-5xl mx-auto mt-10">
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6 text-center">🏫 សូមជ្រើសរើសសាលារៀនរបស់អ្នក</h2>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        <!-- កាតសាលាទាំងអស់ -->
+                    </div>
+                </div>
+
+                <!-- បញ្ជីមុខវិជ្ជា -->
+                <div id="school-details-view" class="hidden">
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div class="flex items-center gap-3">
+                            <button id="btn-back-to-school" class="p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition text-slate-600 dark:text-slate-300">
+                                ← ត្រឡប់
+                            </button>
+                            <div id="current-school-logo" class="w-10 h-10 bg-indigo-50 dark:bg-slate-700 rounded-lg flex items-center justify-center text-xl">🏥</div>
+                            <h2 id="current-school-name" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">សាលារៀនវេជ្ជសាស្ត្រ</h2>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 w-full md:w-auto">
+                            <label class="text-sm font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">ឆ្នាំសិក្សា:</label>
+                            <select id="year-filter-select" class="w-full md:w-48 p-2.5 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-brand-500 cursor-pointer">
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Form បង្កើត Folder ថ្មី -->
+                    <div class="bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900 rounded-2xl p-4 mb-6 admin-only hidden">
+                        <h4 class="font-bold text-indigo-900 dark:text-indigo-300 text-sm mb-2 flex items-center gap-2">📁 បង្កើត Folder ថ្មីសម្រាប់សាលានេះ</h4>
+                        <form id="form-add-folder-school" class="flex flex-col gap-2">
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <input type="text" id="new-folder-name" required placeholder="ឈ្មោះ Folder ថ្មី (ឧ. Y1S1, Y1S2...)" class="flex-grow p-2.5 border dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-xl text-xs sm:text-sm">
+                                
+                                <select id="new-folder-parent-id" class="p-2.5 border dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-xl text-xs sm:text-sm bg-white min-w-[150px]">
+                                    <option value="">-- ជា Folder មេ (No Parent) --</option>
+                                </select>
+
+                                <select id="new-folder-school-id" class="p-2.5 border dark:border-slate-700 dark:bg-slate-800 dark:text-white rounded-xl text-xs sm:text-sm bg-white min-w-[150px]">
+                                    <option value="">-- ជ្រើសរើសសាលា --</option>
+                                </select>
+                                
+                                <button type="submit" class="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs sm:text-sm transition shrink-0">
+                                    ➕ បង្កើត
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-white">📝 ជ្រើសរើសមុខវិជ្ជាដើម្បីប្រឡង</h2>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6" id="qcm-subjects-grid">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Exam View -->
+            <div id="qcm-exam-view" class="hidden max-w-5xl mx-auto flex flex-col md:flex-row gap-6">
+                <div class="flex-grow bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 border dark:border-slate-700 shadow-sm h-fit">
+                    <button id="btn-exit-exam" class="text-slate-600 dark:text-slate-400 text-xs sm:text-sm font-semibold mb-3 flex items-center gap-1 hover:text-red-500 transition">← ត្រឡប់ក្រោយ</button>
+                    <h3 id="exam-question-text" class="text-base sm:text-lg font-bold mb-4 text-slate-900 dark:text-white"></h3>
+                    <div id="exam-options-container" class="space-y-2.5 sm:space-y-3 mb-6"></div>
+                    <div class="flex justify-between items-center gap-2 pt-4 border-t dark:border-slate-700">
+                        <button id="btn-prev-q" class="px-3.5 py-2 border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-600">ថយក្រោយ</button>
+                        <button id="btn-next-q" class="px-3.5 py-2 bg-brand-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-brand-700">បន្តទៅមុខ</button>
+                        <button id="btn-submit-qcm" class="hidden px-3.5 py-2 bg-emerald-600 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-emerald-700">បញ្ជាក់បញ្ចប់</button>
+                    </div>
+                </div>
+
+                <div class="w-full md:w-64 shrink-0 bg-white dark:bg-slate-800 rounded-2xl p-5 border dark:border-slate-700 shadow-sm h-fit sticky top-24">
+                    <h4 class="font-bold text-slate-800 dark:text-slate-200 mb-3 text-sm border-b dark:border-slate-700 pb-2">តារាងសំណួរ</h4>
+                    <div id="question-number-grid" class="grid grid-cols-5 gap-2"></div>
+                    
+                    <div class="mt-6 space-y-2 text-xs text-slate-600 dark:text-slate-400 font-medium">
+                        <div class="flex items-center gap-2"><span class="w-5 h-5 rounded bg-brand-100 dark:bg-brand-900 border border-brand-300 block"></span> ឆ្លើយរួច</div>
+                        <div class="flex items-center gap-2"><span class="w-5 h-5 rounded bg-red-100 dark:bg-red-900 border border-red-400 block"></span> មិនទាន់ឆ្លើយ</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result View -->
+            <div id="qcm-result-view" class="hidden max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 border dark:border-slate-700 shadow-sm">
+                <div class="text-center mb-8">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-2 text-slate-900 dark:text-white">🎉 លទ្ធផលនៃការប្រឡង QCM</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">ខាងក្រោមនេះគឺជាពិន្ទុ និងការពិនិត្យមើលចម្លើយរបស់អ្នក</p>
+                    <div class="text-3xl sm:text-5xl font-extrabold text-brand-600 dark:text-indigo-400 my-4" id="result-score-text">0 / 0</div>
+                    <button id="btn-retake-exam" class="px-6 py-2.5 bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition">🔄 ធ្វើតេស្តម្តងទៀត</button>
+                </div>
+
+                <div class="border-t dark:border-slate-700 pt-6">
+                    <h3 class="font-bold text-slate-900 dark:text-white text-base mb-4 flex items-center gap-2">📋 ពិនិត្យចម្លើយ និងកំហុសឆ្គង</h3>
+                    <div id="exam-review-container" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. ADMIN PANEL TAB -->
+        <section id="tab-admin" class="tab-content hidden flex-grow max-w-4xl mx-auto w-full px-4 py-6 sm:py-8">
+            <h2 class="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 flex items-center gap-2 text-slate-900 dark:text-white">⚙️ Admin Panel</h2>
+            
+            <div class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border dark:border-slate-700 shadow-sm mb-8 space-y-4 admin-only hidden">
+                <h3 class="font-bold text-slate-900 dark:text-white text-base sm:text-lg flex items-center gap-2">🏫 គ្រប់គ្រង និងកែប្រែឈ្មោះសាលារៀន</h3>
+                <div id="admin-schools-list" class="space-y-3">
+                </div>
+            </div>
+
+            <!-- ADD NEW SUBJECT FORM -->
+            <form id="form-add-subject" class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border dark:border-slate-700 shadow-sm space-y-4 mb-8">
+                <h3 class="font-bold text-slate-900 dark:text-white text-base mb-2 flex items-center gap-2">📘 បន្ថែមមុខវិជ្ជាថ្មី (New Subject)</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ឈ្មោះមុខវិជ្ជា</label>
+                        <input type="text" id="subject-name-input" required placeholder="ឧទាហរណ៍៖ MD1 S2..." class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ជ្រើសរើស មុខវិជ្ជាមេ (Optional)</label>
+                        <select id="subject-parent-select" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm bg-slate-50">
+                            <option value="">-- ជាមុខវិជ្ជាមេទូទៅ (No Parent) --</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="w-full py-2.5 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs sm:text-sm transition">
+                    ➕ រក្សាទុកមុខវិជ្ជាថ្មី
+                </button>
+            </form>
+            <!-- 🟢 បន្ថែម Form សម្រាប់ Admin បញ្ចូលសិស្សថ្មី និងកំណត់ Expire Date -->
+        <form id="form-admin-add-student" class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border dark:border-slate-700 shadow-sm space-y-4 mb-8">
+            <h3 class="font-bold text-slate-900 dark:text-white text-base mb-2 flex items-center gap-2">👨‍🎓 បន្ថែមគណនីសិស្សថ្មី (Quick Add Student)</h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ឈ្មោះសិស្ស</label>
+                    <input type="text" id="admin-student-name" required placeholder="ឧទាហរណ៍៖ ឈ្មោះ សុខា" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">អុីមែល (Email)</label>
+                    <input type="email" id="admin-student-email" required placeholder="sokha@gmail.com" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ពាក្យសម្ងាត់ (Password)</label>
+                    <input type="password" id="admin-student-password" required placeholder="យ៉ាងតិច ៦ខ្ទង់" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ថ្ងៃផុតកំណត់ (Expire Date)</label>
+                    <input type="date" id="admin-student-expire" required class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full py-2.5 sm:py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs sm:text-sm transition">
+                ➕ បង្កើតគណនីសិស្ស និងកំណត់ថ្ងៃផុតកំណត់
+            </button>
+        </form>
+            <!-- ADD NEW VIDEO FOLDER FORM -->
+            <form id="form-add-video-folder" class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border dark:border-slate-700 shadow-sm space-y-4 mb-8">
+                <h3 class="font-bold text-slate-900 dark:text-white text-base mb-2 flex items-center gap-2">🎥 បង្កើត Folder មេរៀនវីដេអូថ្មី</h3>
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ឈ្មោះ Folder វីដេអូ</label>
+                    <input type="text" id="video-folder-name" required placeholder="ឧទាហរណ៍៖ មេរៀនវេជ្ជសាស្ត្រ" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                </div>
+                <button type="submit" class="w-full py-2.5 sm:py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl text-xs sm:text-sm transition">
+                    ➕ បង្កើត Folder វីដេអូ
+                </button>
+            </form>
+
+            <!-- ADD NEW SCHOOL FORM -->
+            <form id="form-add-school" class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border dark:border-slate-700 shadow-sm space-y-4 mb-8 admin-only hidden">
+                <h3 class="font-bold text-slate-900 dark:text-white text-base mb-2 flex items-center gap-2">🏫 បន្ថែមសាលារៀនថ្មី (New School)</h3>
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ឈ្មោះសាលារៀន</label>
+                    <input type="text" id="school-name" required placeholder="ឧទាហរណ៍៖ សាលារៀនឱសថសាស្ត្រ" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">រូបតំណាងសាលា (Logo)</label>
+                    <div class="flex flex-wrap gap-4 mb-3">
+                        <label class="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+                            <input type="radio" name="logo_type" value="emoji" checked class="text-brand-600">
+                            <span class="text-sm">ប្រើ Emoji</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+                            <input type="radio" name="logo_type" value="upload" class="text-brand-600">
+                            <span class="text-sm">Upload រូបភាពពី Device</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+                            <input type="radio" name="logo_type" value="url" class="text-brand-600">
+                            <span class="text-sm">បញ្ចូលតាម URL</span>
+                        </label>
+                    </div>
+
+                    <div id="logo-input-emoji">
+                        <input type="text" id="school-icon-emoji" placeholder="ឧទាហរណ៍៖ 💊" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                    </div>
+                    <div id="logo-input-upload" class="hidden">
+                        <input type="file" id="school-icon-file" accept="image/*" class="block w-full text-xs sm:text-sm text-slate-500 border dark:border-slate-700 dark:bg-slate-900 rounded-xl p-1">
+                    </div>
+                    <div id="logo-input-url" class="hidden">
+                        <input type="url" id="school-icon-url" placeholder="https://example.com/logo.png" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ការពិពណ៌នា (Optional)</label>
+                    <input type="text" id="school-desc" placeholder="ឧទាហរណ៍៖ Pharmacy School" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                </div>
+
+                <button type="submit" id="btn-submit-school" class="w-full py-2.5 sm:py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-xs sm:text-sm transition">
+                    ➕ រក្សាទុកសាលារៀនថ្មី
+                </button>
+            </form>
+
+            <!-- SUBJECT MANAGEMENT -->
+            <div class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border dark:border-slate-700 shadow-sm mb-8 space-y-4">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
+                    <h3 class="font-bold text-slate-900 dark:text-white text-base sm:text-lg">⚙️ គ្រប់គ្រង, កែប្រែឈ្មោះ និងលុប Folder / មុខវិជ្ជា</h3>
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
+                        <input type="text" id="admin-search-subject" placeholder="🔍 ស្វែងរក Folder ឬ ID..." class="px-3 py-2 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm w-full sm:w-[220px]">
+                    </div>
+                </div>
+                <div id="admin-subjects-list" class="space-y-3 max-h-72 overflow-y-auto pr-2">
+                </div>
+            </div>
+
+            <!-- EXCEL IMPORT CARD -->
+            <div class="bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900 p-4 sm:p-6 rounded-2xl mb-6 sm:mb-8">
+                <h3 class="font-bold text-indigo-900 dark:text-indigo-300 text-base sm:text-lg mb-1.5">📥 Import សំណួរពី Excel File</h3>
+                <p class="text-[11px] sm:text-xs text-indigo-700 dark:text-indigo-400 mb-3">Header: <code class="bg-white dark:bg-slate-900 px-1 rounded font-mono">question_text, option_a, option_b, option_c, option_d, correct_option, explanation</code></p>
+                
+                <div class="mb-3">
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ជ្រើសរើសមុខវិជ្ជា</label>
+                    <select id="excel-import-subject-id" required class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm bg-white">
+                        <option value="">-- ជ្រើសរើសមុខវិជ្ជា --</option>
+                    </select>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                    <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="block w-full text-xs sm:text-sm text-slate-500 border dark:border-slate-700 dark:bg-slate-900 rounded-xl p-1"/>
+                    <button id="btn-import-excel" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm shrink-0 transition">
+                        📊 Upload & Import
+                    </button>
+                </div>
+            </div>
+            
+            <!-- SINGLE QUESTION FORM -->
+            <form id="form-add-qcm" class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border dark:border-slate-700 shadow-sm space-y-4 mb-8">
+                <h3 class="font-bold text-slate-900 dark:text-white text-base mb-2">➕ បញ្ចូលសំណួរម្តងមួយ (Manual)</h3>
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ជ្រើសរើសមុខវិជ្ជា</label>
+                    <select id="qcm-select-subject" required class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm bg-slate-50">
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ខ្លឹមសារសំណួរ</label>
+                    <textarea id="qcm-question-text" required placeholder="វាយបញ្ចូលសំណួរ..." class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm" rows="3"></textarea>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300">ជម្រើសចម្លើយ</label>
+                    <div class="flex items-center gap-2">
+                        <input type="radio" name="correct_opt" value="0" checked>
+                        <input type="text" class="qcm-opt-input w-full p-2 sm:p-2.5 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm" placeholder="ជម្រើស A" required>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="radio" name="correct_opt" value="1">
+                        <input type="text" class="qcm-opt-input w-full p-2 sm:p-2.5 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm" placeholder="ជម្រើស B" required>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="radio" name="correct_opt" value="2">
+                        <input type="text" class="qcm-opt-input w-full p-2 sm:p-2.5 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm" placeholder="ជម្រើស C" required>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="radio" name="correct_opt" value="3">
+                        <input type="text" class="qcm-opt-input w-full p-2 sm:p-2.5 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm" placeholder="ជម្រើស D" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ការពន្យល់បន្ថែម (Optional)</label>
+                    <input type="text" id="qcm-explanation" placeholder="ពន្យល់ហេតុផល..." class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                </div>
+
+                <button type="submit" class="w-full py-2.5 sm:py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs sm:text-sm transition">
+                    ➕ រក្សាទុកសំណួរ QCM ថ្មី
+                </button>
+            </form>
+
+            <!-- ADD LESSON VIDEO FORM -->
+            <form id="form-add-lesson" class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border dark:border-slate-700 shadow-sm space-y-4 mb-8">
+                <h3 class="font-bold text-slate-900 dark:text-white text-base mb-2 flex items-center gap-2">🎥 បញ្ចូលមេរៀនវីដេអូថ្មី</h3>
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ចំណងជើងមេរៀន</label>
+                    <input type="text" id="lesson-title" required placeholder="ចំណងជើង..." class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ជ្រើសរើសមុខវិជ្ជា</label>
+                    <select id="lesson-select-subject" required class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm bg-slate-50">
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">YouTube Embed Video URL</label>
+                    <input type="url" id="lesson-video-url" required placeholder="https://www.youtube.com/embed/..." class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                </div>
+                <button type="submit" class="w-full py-2.5 sm:py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs sm:text-sm transition">
+                    🎬 រក្សាទុកមេរៀនវីដេអូ
+                </button>
+            </form>
+
+            <!-- QCM MANAGEMENT SECTION -->
+            <div class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border dark:border-slate-700 shadow-sm mt-6 sm:mt-8 space-y-4">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
+                    <h3 class="font-bold text-slate-900 dark:text-white text-sm sm:text-base shrink-0">🗑️ បញ្ជីសំណួរ QCM</h3>
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
+                        <input type="text" id="admin-search-question" placeholder="🔍 ស្វែងរកសំណួរ..." class="px-3 py-2 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm w-full sm:w-[220px]">
+                        <select id="admin-filter-subject" class="px-3 py-2 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm w-full sm:w-[220px]">
+                        </select>
+                    </div>
+                </div>
+                <div id="admin-questions-list" class="space-y-3 pt-4 border-t dark:border-slate-700">
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 mt-auto py-6">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">M</div>
+                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    &copy; <span id="year"></span> Medi-LMS. All rights reserved.
+                </p>
+            </div>
+            <div class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <a href="#" class="hover:text-brand-600 transition">អំពីយើង</a>
+                <a href="#" class="hover:text-brand-600 transition">ជំនួយ</a>
+                <a href="#" class="hover:text-brand-600 transition">គោលការណ៍ភាពឯកជន</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODALS -->
+    <!-- AUTH MODAL -->
+    <div id="auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl p-6 relative shadow-xl border dark:border-slate-700">
+            <button id="btn-close-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">✕</button>
+            <h3 class="text-base sm:text-lg font-bold mb-4 text-slate-900 dark:text-white" id="auth-modal-title">ចូលប្រព័ន្ធ</h3>
+            
+            <form id="form-auth" class="space-y-3.5">
+                <div id="reg-name-group" class="hidden">
+                    <input type="text" id="auth-name" placeholder="ឈ្មោះពេញ" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                </div>
+                <input type="email" id="auth-email" required placeholder="អុីមែល" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                <div>
+                    <input type="password" id="auth-password" required placeholder="ពាក្យសម្ងាត់" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                    <div id="forgot-password-link-container" class="text-right mt-1.5">
+                        <button type="button" id="btn-forgot-pass" class="text-xs text-brand-600 dark:text-indigo-400 hover:underline font-semibold">ភ្លេចពាក្យសម្ងាត់?</button>
+                    </div>
+                </div>
+                <button type="submit" id="btn-auth-submit" class="w-full py-2.5 sm:py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs sm:text-sm transition">បន្ត</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- INLINE ADD LESSON MODAL -->
+    <div id="inline-add-lesson-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-xl border border-slate-100 dark:border-slate-700">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-slate-900 dark:text-white text-lg">➕ បន្ថែមវីដេអូមេរៀនថ្មី</h3>
+                <button type="button" id="btn-close-inline-modal" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center font-bold">✕</button>
+            </div>
+            
+            <form id="form-inline-add-lesson" class="space-y-4">
+                <input type="hidden" id="inline-lesson-subject-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">ចំណងជើងមេរៀន</label>
+                    <input type="text" id="inline-lesson-title" required placeholder="ចំណងជើង..." class="w-full px-4 py-2.5 rounded-xl border dark:border-slate-700 dark:bg-slate-900 dark:text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">YouTube Embed Video URL</label>
+                    <input type="text" id="inline-lesson-url" required placeholder="https://www.youtube.com/embed/..." class="w-full px-4 py-2.5 rounded-xl border dark:border-slate-700 dark:bg-slate-900 dark:text-white text-sm">
+                </div>
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button type="button" id="btn-cancel-inline-modal" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition">បោះបង់</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-sm transition">💾 រក្សាទុកវីដេអូ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT LESSON VIDEO MODAL -->
+    <div id="edit-lesson-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-lg rounded-3xl p-6 relative shadow-xl border dark:border-slate-700">
+            <button type="button" id="btn-close-edit-modal" class="absolute top-4 right-4 text-slate-400 dark:text-slate-400 text-xl font-bold">✕</button>
+            <h3 class="text-lg font-bold mb-4 text-slate-900 dark:text-white">✏️ កែប្រែមេរៀនវីដេអូ</h3>
+            
+            <form id="form-edit-lesson" class="space-y-4">
+                <input type="hidden" id="edit-lesson-id">
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ចំណងជើងមេរៀន</label>
+                    <input type="text" id="edit-lesson-title" required class="w-full p-2.5 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ជ្រើសរើសមុខវិជ្ជា (Folder)</label>
+                    <select id="edit-lesson-subject" required class="w-full p-2.5 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-sm">
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">YouTube Embed Video URL</label>
+                    <input type="url" id="edit-lesson-video-url" required class="w-full p-2.5 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-sm">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" class="flex-grow py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm transition">💾 រក្សាទុកការកែប្រែ</button>
+                    <button type="button" id="btn-cancel-edit" class="px-4 py-2.5 bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-xl text-sm transition">បោះបង់</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT SCHOOL MODAL -->
+    <div id="edit-school-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl p-6 relative shadow-xl border dark:border-slate-700">
+            <button type="button" id="btn-close-edit-school-modal" class="absolute top-4 right-4 text-slate-400 dark:text-slate-400 text-xl font-bold">✕</button>
+            <h3 class="text-lg font-bold mb-4 text-slate-900 dark:text-white">✏️ កែប្រែព័ត៌មានសាលារៀន</h3>
+            
+            <form id="form-edit-school" class="space-y-4">
+                <input type="hidden" id="edit-school-id">
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ឈ្មោះសាលារៀន</label>
+                    <input type="text" id="edit-school-name" required class="w-full p-2.5 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs sm:text-sm font-bold mb-2 text-slate-700 dark:text-slate-300">រូបតំណាងសាលា (Logo)</label>
+                    <div class="flex flex-wrap gap-4 mb-3">
+                        <label class="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+                            <input type="radio" name="edit_logo_type" value="emoji" checked class="text-brand-600">
+                            <span class="text-sm">ប្រើ Emoji</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+                            <input type="radio" name="edit_logo_type" value="upload" class="text-brand-600">
+                            <span class="text-sm">Upload រូបភាពពី Device</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
+                            <input type="radio" name="edit_logo_type" value="url" class="text-brand-600">
+                            <span class="text-sm">បញ្ចូលតាម URL</span>
+                        </label>
+                    </div>
+
+                    <div id="edit-logo-input-emoji">
+                        <input type="text" id="edit-school-icon-emoji" placeholder="ឧទាហរណ៍៖ 💊" class="w-full p-2.5 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-sm">
+                    </div>
+                    <div id="edit-logo-input-upload" class="hidden">
+                        <input type="file" id="edit-school-icon-file" accept="image/*" class="block w-full text-xs sm:text-sm text-slate-500 border dark:border-slate-700 dark:bg-slate-900 rounded-xl p-1">
+                    </div>
+                    <div id="edit-logo-input-url" class="hidden">
+                        <input type="url" id="edit-school-icon-url" placeholder="https://example.com/logo.png" class="w-full p-2.5 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ការពិពណ៌នា</label>
+                    <input type="text" id="edit-school-desc" class="w-full p-2.5 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-sm">
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" class="flex-grow py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-sm transition">💾 រក្សាទុកការកែប្រែ</button>
+                    <button type="button" id="btn-cancel-edit-school" class="px-4 py-2.5 bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-xl text-sm transition">បោះបង់</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="./js/app.js"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
