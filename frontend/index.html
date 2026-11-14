@@ -30,9 +30,9 @@
     <!-- HEADER NAVIGATION -->
     <header class="sticky top-0 z-40 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2">
-            <!-- Logo -->
+            <!-- Logo (កែសម្រួលទំហំពី w-10 h-10 មកជា w-12 h-12 ឬ w-14 h-14) -->
             <div class="flex items-center gap-2 cursor-pointer shrink-0" id="btn-logo">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white font-bold">M</div>
+                <img src="images/logo.jpg" alt="Medi-LMS Logo" class="w-12 h-12 object-contain rounded-xl">
                 <span class="font-bold text-base text-slate-900 dark:text-white">Medi-LMS</span>
             </div>
             
@@ -48,7 +48,6 @@
             <div class="flex items-center gap-2 shrink-0">
                 <div id="auth-guest-view" class="flex gap-1.5">
                     <button id="btn-open-login" class="px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">ចូលប្រព័ន្ធ</button>
-                    <!-- <button id="btn-open-register" class="px-3 py-1.5 text-xs font-semibold text-white bg-brand-600 rounded-xl">ចុះឈ្មោះ</button> -->
                 </div>
                 <div id="auth-user-view" class="hidden flex items-center gap-1.5">
                     <span id="user-display-name" class="text-xs font-bold text-slate-700 dark:text-slate-300 max-w-[70px] sm:max-w-none truncate"></span>
@@ -71,7 +70,7 @@
         <section id="tab-home" class="tab-content flex-grow bg-brand-900 text-white px-4 py-16 sm:py-24 flex flex-col justify-center">
             <div class="max-w-4xl mx-auto text-center">
                 <h1 class="text-3xl sm:text-5xl font-extrabold mb-4 sm:mb-6 leading-tight">សាលារៀនវេជ្ជសាស្ត្រឌីជីថល</h1>
-                <p class="text-sm sm:text-lg text-slate-300 max-w-2xl mx-auto mb-12">រៀនសូត្រតាមរយៈវីដេអូមេរៀន និងប្រឡងល្បងសមត្ថភាព QCM ได้គ្រប់ពេលវេលា គ្រប់ទីកន្លែង</p>
+                <p class="text-sm sm:text-lg text-slate-300 max-w-2xl mx-auto mb-12">រៀនសូត្រតាមរយៈវីដេអូមេរៀន និងប្រឡងល្បងសមត្ថភាព QCM បានគ្រប់ពេលវេលា គ្រប់ទីកន្លែង</p>
                 
                 <!-- Feature Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
@@ -101,7 +100,6 @@
             
             <!-- ប្រអប់សម្រាប់ដាក់ Folder មេ -->
             <div id="lesson-folders-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                <!-- Folder មេនឹងបង្ហាញនៅទីនេះ -->
             </div>
 
             <!-- ប្រអប់សម្រាប់ដាក់វីដេអូ -->
@@ -118,7 +116,6 @@
                 </div>
                 
                 <div id="lessons-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- វីដេអូនឹងបង្ហាញនៅទីនេះ -->
                 </div>
             </div>
         </section>
@@ -132,7 +129,6 @@
                     <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-6 text-center">🏫 សូមជ្រើសរើសសាលារៀនរបស់អ្នក</h2>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        <!-- កាតសាលាទាំងអស់ -->
                     </div>
                 </div>
 
@@ -255,36 +251,38 @@
                     ➕ រក្សាទុកមុខវិជ្ជាថ្មី
                 </button>
             </form>
-            <!-- 🟢 បន្ថែម Form សម្រាប់ Admin បញ្ចូលសិស្សថ្មី និងកំណត់ Expire Date -->
-        <form id="form-admin-add-student" class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border dark:border-slate-700 shadow-sm space-y-4 mb-8">
-            <h3 class="font-bold text-slate-900 dark:text-white text-base mb-2 flex items-center gap-2">👨‍🎓 បន្ថែមគណនីសិស្សថ្មី (Quick Add Student)</h3>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ឈ្មោះសិស្ស</label>
-                    <input type="text" id="admin-student-name" required placeholder="ឧទាហរណ៍៖ ឈ្មោះ សុខា" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
-                </div>
-                <div>
-                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">អុីមែល (Email)</label>
-                    <input type="email" id="admin-student-email" required placeholder="sokha@gmail.com" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ពាក្យសម្ងាត់ (Password)</label>
-                    <input type="password" id="admin-student-password" required placeholder="យ៉ាងតិច ៦ខ្ទង់" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+            <!-- ADD NEW STUDENT FORM -->
+            <form id="form-admin-add-student" class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border dark:border-slate-700 shadow-sm space-y-4 mb-8">
+                <h3 class="font-bold text-slate-900 dark:text-white text-base mb-2 flex items-center gap-2">👨‍🎓 បន្ថែមគណនីសិស្សថ្មី (Quick Add Student)</h3>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ឈ្មោះសិស្ស</label>
+                        <input type="text" id="admin-student-name" required placeholder="ឧទាហរណ៍៖ ឈ្មោះ សុខា" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">អុីមែល (Email)</label>
+                        <input type="email" id="admin-student-email" required placeholder="sokha@gmail.com" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ថ្ងៃផុតកំណត់ (Expire Date)</label>
-                    <input type="date" id="admin-student-expire" required class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
-                </div>
-            </div>
 
-            <button type="submit" class="w-full py-2.5 sm:py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs sm:text-sm transition">
-                ➕ បង្កើតគណនីសិស្ស និងកំណត់ថ្ងៃផុតកំណត់
-            </button>
-        </form>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ពាក្យសម្ងាត់ (Password)</label>
+                        <input type="password" id="admin-student-password" required placeholder="យ៉ាងតិច ៦ខ្ទង់" class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs sm:text-sm font-bold mb-1 text-slate-700 dark:text-slate-300">ថ្ងៃផុតកំណត់ (Expire Date)</label>
+                        <input type="date" id="admin-student-expire" required class="w-full p-2.5 sm:p-3 border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-xs sm:text-sm">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 sm:py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs sm:text-sm transition">
+                    ➕ បង្កើតគណនីសិស្ស និងកំណត់ថ្ងៃផុតកំណត់
+                </button>
+            </form>
+
             <!-- ADD NEW VIDEO FOLDER FORM -->
             <form id="form-add-video-folder" class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border dark:border-slate-700 shadow-sm space-y-4 mb-8">
                 <h3 class="font-bold text-slate-900 dark:text-white text-base mb-2 flex items-center gap-2">🎥 បង្កើត Folder មេរៀនវីដេអូថ្មី</h3>
@@ -465,15 +463,34 @@
                     &copy; <span id="year"></span> Medi-LMS. All rights reserved.
                 </p>
             </div>
-            <div class="flex items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400">
-                <a href="#" class="hover:text-brand-600 transition">អំពីយើង</a>
-                <a href="#" class="hover:text-brand-600 transition">ជំនួយ</a>
-                <a href="#" class="hover:text-brand-600 transition">គោលការណ៍ភាពឯកជន</a>
+            <!-- 🟢 បន្ថែម Links សម្រាប់ អំពីយើង, ជំនួយ, គោលការណ៍ភាពឯកជន, ទំនាក់ទំនង, Telegram និង Facebook -->
+            <div class="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <button type="button" id="footer-about" class="hover:text-brand-600 transition">អំពីយើង</button>
+                <button type="button" id="footer-help" class="hover:text-brand-600 transition">ជំនួយ</button>
+                <button type="button" id="footer-privacy" class="hover:text-brand-600 transition">គោលការណ៍ភាពឯកជន</button>
+                <button type="button" id="footer-contact" class="hover:text-brand-600 transition font-bold text-brand-600">ទំនាក់ទំនង</button>
+                <a href="https://t.me/@kroengouchimd1" target="_blank" class="hover:text-sky-500 transition text-sky-600 font-semibold">✈️ Telegram</a>
+                <a href="https://www.facebook.com/profile.php?id=61596396487504" target="_blank" class="hover:text-blue-500 transition text-blue-600 font-semibold">📘 Facebook</a>
             </div>
         </div>
     </footer>
 
     <!-- MODALS -->
+    <!-- INFO & CONTACT MODAL -->
+    <div id="info-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 relative animate-in fade-in zoom-in duration-200">
+            <button type="button" id="btn-close-info-modal" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl font-bold">✕</button>
+            
+            <h3 id="info-modal-title" class="text-lg font-bold text-slate-900 dark:text-white mb-3">ចំណងជើង</h3>
+            <div id="info-modal-content" class="text-sm text-slate-600 dark:text-slate-300 space-y-3 max-h-[60vh] overflow-y-auto pr-2">
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button type="button" id="btn-close-info-modal-action" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold hover:bg-slate-200 transition">បិទ</button>
+            </div>
+        </div>
+    </div>
+
     <!-- AUTH MODAL -->
     <div id="auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl p-6 relative shadow-xl border dark:border-slate-700">

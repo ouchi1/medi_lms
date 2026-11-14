@@ -1465,6 +1465,84 @@ function setupEvents() {
             document.getElementById('school-details-view').classList.remove('hidden');
         };
     }
+    // 🟢 គ្រប់គ្រង Footer Links (អំពីយើង, ជំនួយ, គោលការណ៍ភាពឯកជន, ទំនាក់ទំនង)
+    const infoModal = document.getElementById('info-modal');
+    const infoModalTitle = document.getElementById('info-modal-title');
+    const infoModalContent = document.getElementById('info-modal-content');
+    const btnCloseInfo = document.getElementById('btn-close-info-modal');
+    const btnCloseInfoAction = document.getElementById('btn-close-info-modal-action');
+
+    if (infoModal) {
+        const closeInfo = () => infoModal.classList.add('hidden');
+        if (btnCloseInfo) btnCloseInfo.onclick = closeInfo;
+        if (btnCloseInfoAction) btnCloseInfoAction.onclick = closeInfo;
+        infoModal.onclick = (e) => { if (e.target === infoModal) closeInfo(); };
+    }
+
+    const footerAbout = document.getElementById('footer-about');
+    if (footerAbout) {
+        footerAbout.onclick = () => {
+            infoModalTitle.innerText = 'អំពីយើង (About Us)';
+            infoModalContent.innerHTML = `
+                <p><b>Medi-LMS</b> គឺជាប្រព័ន្ធគ្រប់គ្រងការសិក្សាផ្នែកវេជ្ជសាស្ត្រ និងសុខាភិបាលឌីជីថល ដែលជួយដល់និស្សិត និងអ្នកសិក្សាក្នុងការស្រាវជ្រាវ មើលមេរៀនវីដេអូ និងធ្វើតេស្តសំណួរ QCM យ៉ាងងាយស្រួល។</p>
+                <p class="text-xs text-slate-400">រក្សាសិទ្ធិដោយ © 2026 Medi-LMS.</p>
+            `;
+            infoModal.classList.remove('hidden');
+        };
+    }
+
+    const footerHelp = document.getElementById('footer-help');
+    if (footerHelp) {
+        footerHelp.onclick = () => {
+            infoModalTitle.innerText = 'ជំនួយ (Help & Support)';
+            infoModalContent.innerHTML = `
+                <p>តើអ្នកកំពុងជួបបញ្ហាប្រឈមក្នុងការប្រើប្រាស់មែនទេ?</p>
+                <ul class="list-disc pl-5 space-y-1 text-xs">
+                    <li><b>ការ Login:</b> ប្រើប្រាស់ Email និង Password របស់អ្នក។</li>
+                    <li><b>ការប្រឡង QCM:</b> ជ្រើសរើសសាលា ឆ្នាំសិក្សា និងមុខវិជ្ជាដើម្បីចាប់ផ្តើមធ្វើតេស្ត។</li>
+                    <li><b>វីដេអូមេរៀន:</b> តម្រូវឱ្យ Login ចូលគណនីជាមុនសិនទើបអាចមើលបាន។</li>
+                </ul>
+            `;
+            infoModal.classList.remove('hidden');
+        };
+    }
+
+    const footerPrivacy = document.getElementById('footer-privacy');
+    if (footerPrivacy) {
+        footerPrivacy.onclick = () => {
+            infoModalTitle.innerText = 'គោលការណ៍ភាពឯកជន (Privacy Policy)';
+            infoModalContent.innerHTML = `
+                <p>ពួកយើងយកចិត្តទុកដាក់ខ្ពស់លើសុវត្ថិភាព និងភាពឯកជនរបស់អ្នកប្រើប្រាស់។</p>
+                <p class="text-xs">ទិន្នន័យទាំងអស់ដែលបានបញ្ចូលរួមមាន Email និងប្រវត្តិការប្រឡង គឺត្រូវបានរក្សាទុកដោយសុវត្ថិភាព និងមិនត្រូវបានយកទៅប្រើប្រាស់ខុសគោលបំណងឡើយ។</p>
+            `;
+            infoModal.classList.remove('hidden');
+        };
+    }
+
+    const footerContact = document.getElementById('footer-contact');
+    if (footerContact) {
+        footerContact.onclick = () => {
+            infoModalTitle.innerText = 'ទំនាក់ទំនងពួកយើង (Contact Us)';
+            infoModalContent.innerHTML = `
+                <p>ប្រសិនបើអ្នកមានសំណួរ ឬត្រូវការជំនួយបន្ថែម សូមទាក់ទងមកកាន់ពួកយើងតាមរយៈ៖</p>
+                <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl space-y-3 text-xs">
+                    <p>📧 <b>Email:</b> medi_lms@gmail.com</p>
+                    <p>📞 <b>ទូរស័ព្ទលេខ:</b> +855 96 97 73 429 </p>
+                    <p>🏫 <b>អាសយដ្ឋាន:</b> រាជធានីភ្នំពេញ, ប្រទេសកម្ពុជា</p>
+                    
+                    <div class="pt-2 border-t border-slate-200 dark:border-slate-700 flex items-center gap-3">
+                        <a href="https://t.me/kroengouchimd1" target="_blank" class="flex-1 py-2 px-3 bg-sky-500 text-white rounded-xl text-center font-bold hover:bg-sky-600 transition flex items-center justify-center gap-1.5">
+                            ✈️ Telegram
+                        </a>
+                        <a href="https://www.facebook.com/profile.php?id=61596396487504" target="_blank" class="flex-1 py-2 px-3 bg-blue-600 text-white rounded-xl text-center font-bold hover:bg-blue-700 transition flex items-center justify-center gap-1.5">
+                            📘 Facebook Page
+                        </a>
+                    </div>
+                </div>
+            `;
+            infoModal.classList.remove('hidden');
+        };
+    }
 }
 
 // 🟢 មុខងារគ្រប់គ្រង Dark Mode
