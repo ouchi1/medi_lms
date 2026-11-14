@@ -162,45 +162,62 @@ function setupNavigation() {
     }
 }
 
-// ២. Render User Session
+// ២. Render User Session (បានកែសម្រួលការពារបញ្ហា Role និងអក្សរតូចធំ)
 function renderUserSession() {
-    const user = JSON.parse(localStorage.getItem('medi_user'));
+    const userStr = localStorage.getItem('medi_user');
     const guestView = document.getElementById('auth-guest-view');
     const userView = document.getElementById('auth-user-view');
     const adminBtn = document.getElementById('nav-admin');
 
-    if (user) {
-        guestView.classList.add('hidden');
-        userView.classList.remove('hidden');
-        document.getElementById('user-display-name').innerText = user.name;
-        document.getElementById('user-role-badge').innerText = user.role.toUpperCase();
+    if (userStr) {
+        try {
+            const user = JSON.parse(userStr);
+            if (guestView) guestView.classList.add('hidden');
+            if (userView) userView.classList.remove('hidden');
+            
+            if (document.getElementById('user-display-name')) {
+                document.getElementById('user-display-name').innerText = user.name || user.email || 'User';
+            }
+            
+            const rawRole = user.role ? String(user.role).toUpperCase().trim() : '';
+            if (document.getElementById('user-role-badge')) {
+                document.getElementById('user-role-badge').innerText = rawRole || 'GUEST';
+            }
 
-        const role = user.role.toUpperCase();
-        if (role === 'ADMIN' || role === 'TEACHER') {
-            if (adminBtn) adminBtn.classList.remove('hidden');
-            
-            document.querySelectorAll('.admin-only').forEach(el => {
-                if (el) el.classList.remove('hidden');
-            });
-        } else {
-            if (adminBtn) adminBtn.classList.add('hidden');
-            
-            document.querySelectorAll('.admin-only').forEach(el => {
-                if (el) el.classList.add('hidden');
-            });
+            if (rawRole === 'ADMIN' || rawRole === 'TEACHER' || rawRole === 'SUPERADMIN') {
+                if (adminBtn) adminBtn.classList.remove('hidden');
+                
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    if (el) el.classList.remove('hidden');
+                });
+            } else {
+                if (adminBtn) adminBtn.classList.add('hidden');
+                
+                document.querySelectorAll('.admin-only').forEach(el => {
+                    if (el) el.classList.add('hidden');
+                });
+            }
+        } catch (e) {
+            console.error("Error parsing user session:", e);
+            localStorage.removeItem('medi_user');
+            resetGuestUI(guestView, userView, adminBtn);
         }
     } else {
-        guestView.classList.remove('hidden');
-        userView.classList.add('hidden');
-        if (adminBtn) adminBtn.classList.add('hidden');
-        
-        document.querySelectorAll('.admin-only').forEach(el => {
-            if (el) el.classList.add('hidden');
-        });
+        resetGuestUI(guestView, userView, adminBtn);
     }
 }
 
-// ៣. ទាញយកមេរៀនវីដេអូ
+function resetGuestUI(guestView, userView, adminBtn) {
+    if (guestView) guestView.classList.remove('hidden');
+    if (userView) userView.classList.add('hidden');
+    if (adminBtn) adminBtn.classList.add('hidden');
+    
+    document.querySelectorAll('.admin-only').forEach(el => {
+        if (el) el.classList.add('hidden');
+    });
+}
+
+// ៣. ទាញយកមេរៀនវីដេអូ (បិទមិនឱ្យមើលបើមិនទាន់ Login)[cite: 4]
 async function loadLessons() {
     const foldersGrid = document.getElementById('lesson-folders-grid');
     const videosView = document.getElementById('lesson-videos-view');
@@ -210,6 +227,24 @@ async function loadLessons() {
     const lessonSelectSubject = document.getElementById('lesson-select-subject');
 
     if (!foldersGrid) return;
+
+    const user = JSON.parse(localStorage.getItem('medi_user'));
+    const token = localStorage.getItem('token');
+
+    if (!token || !user) {
+        foldersGrid.innerHTML = `
+            <div class="col-span-3 text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+                <div class="text-4xl mb-3">🔒</div>
+                <h3 class="font-bold text-lg text-slate-900 dark:text-white mb-1">សូមចូលប្រព័ន្ធជាមុនសិន</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">អ្នកត្រូវតែ Login ចូលគណនីទើបអាចមើលមេរៀនវីដេអូបាន។</p>
+                <button type="button" onclick="const loginBtn = document.getElementById('btn-open-login'); if(loginBtn) loginBtn.click();" class="px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-bold hover:bg-brand-700 transition">
+                    ចូលប្រព័ន្ធ (Login)
+                </button>
+            </div>
+        `;
+        if (videosView) videosView.classList.add('hidden');
+        return;
+    }
 
     try {
         const subjects = await API.request('/subjects'); 
@@ -232,8 +267,7 @@ async function loadLessons() {
             return;
         }
 
-        const user = JSON.parse(localStorage.getItem('medi_user'));
-        const isAdmin = user && (user.role.toUpperCase() === 'ADMIN' || user.role.toUpperCase() === 'TEACHER');
+        const isAdmin = user && (String(user.role).toUpperCase() === 'ADMIN' || String(user.role).toUpperCase() === 'TEACHER');
 
         foldersGrid.innerHTML = videoFolders.map(folder => {
             const childrenIds = videoChildSubjects.filter(s => s.parent_id === folder.id).map(s => s.id);
@@ -552,7 +586,7 @@ async function loadQCMSubjects() {
     }
 }
 
-// ៥. Function Render Subject Grid
+// ៥. Function Render Subject Grid (បានភ្ជាប់ Class subject-card ត្រឹមត្រូវ អាចចុចចូលធ្វើតេស្តបាន)
 function renderSubjectGrid(allSubjects, schoolId, yearFilter, getParentId) {
     const grid = document.getElementById('qcm-subjects-grid');
     if (!grid) return;
@@ -1028,8 +1062,21 @@ function renderAdminSubjectsList(subjects, getParentId) {
     });
 }
 
-// ៧. ទាញយកសំណួរ QCM
+/// ៧. ទាញយកសំណួរ QCM (បានបន្ថែមលក្ខខណ្ឌការពារ ត្រូវតែ Login មុនទើបអាចធ្វើតេស្តបាន)
 async function startExam(subjectId) {
+    // 🟢 ពិនិត្យមើលការ Login (ប្រសិនបើគ្មាន Token ឬ User មិនទាន់ Login មិនអនុញ្ញាតឱ្យធ្វើតេស្តទេ)
+    const user = JSON.parse(localStorage.getItem('medi_user'));
+    const token = localStorage.getItem('token');
+
+    if (!token || !user) {
+        alert('សូមចូលប្រព័ន្ធ (Login) ជាមុនសិន ទើបអាចធ្វើតេស្ត QCM បាន!');
+        const loginBtn = document.getElementById('btn-open-login');
+        if (loginBtn) {
+            loginBtn.click();
+        }
+        return;
+    }
+
     try {
         const questions = await API.getQCMQuestions(subjectId);
         if (!questions || !questions.length) {
