@@ -1,5 +1,6 @@
 // const API_BASE = 'http://localhost:5000/api';
-const API_BASE = "https://medi-lms-1.onrender.com";
+const API_BASE = "https://medi-lms-1.onrender.com/api";
+
 export const API = {
     async request(endpoint, options = {}) {
         const token = localStorage.getItem('token');
@@ -46,38 +47,37 @@ export const API = {
     deleteQCMQuestion(questionId) {
         return this.request(`/qcm/questions/${questionId}`, { method: 'DELETE' });
     },
+
     deleteLesson(lessonId) {
         return this.request(`/lessons/${lessonId}`, { method: 'DELETE' });
     },
+
     resetPassword(email, newPassword) {
         return this.request('/auth/reset-password', {
             method: 'POST',
             body: JSON.stringify({ email, newPassword })
         });
     },
+
     deleteSubject(subjectId) {
         return this.request(`/subjects/${subjectId}`, { method: 'DELETE' });
     },
+
     updateSubject(subjectId, name, parentId) {
         return this.request(`/subjects/${subjectId}`, {
             method: 'PUT',
             body: JSON.stringify({ name, parentId })
         });
     },
-        // បន្ថែមនៅក្រោម getQCMSubjects ឬ Function ផ្សេងៗ
+
     getSchools() {
         return this.request('/schools');
     },
+
     addSchool(data) {
         return this.request('/schools', { method: 'POST', body: JSON.stringify(data) });
     },
-    updateSchool(schoolId, name) {
-        return this.request(`/schools/${schoolId}`, {
-            method: 'PUT',
-            body: JSON.stringify({ name })
-        });
-    },
-    // បន្ថែមមុខងារនេះចូលក្នុង API object របស់អ្នកក្នុង api.js
+
     async updateSchool(schoolId, schoolData) {
         return await this.request(`/schools/${schoolId}`, {
             method: 'PUT',
