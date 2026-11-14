@@ -1,5 +1,5 @@
-const API_BASE = 'http://localhost:5000/api';
-
+// const API_BASE = 'http://localhost:5000/api';
+const API_BASE = "https://medi-lms-1.onrender.com";
 export const API = {
     async request(endpoint, options = {}) {
         const token = localStorage.getItem('token');
