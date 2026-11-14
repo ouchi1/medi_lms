@@ -16,7 +16,7 @@ export const API = {
     },
 
     login(email, password) {
-        return this.request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+        return this.request('/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     },
 
     registerStudent(fullName, email, password) {
