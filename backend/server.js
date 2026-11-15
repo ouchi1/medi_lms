@@ -80,7 +80,8 @@ app.post('/api/auth/reset-password', async (req, res) => {
     }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+// គាំទ្រទាំង /api/login និង /api/auth/login ដើម្បីការពារបញ្ហា 404 Not Found
+app.post(['/api/login', '/api/auth/login'], async (req, res) => {
     try {
         const { email, password } = req.body;
         const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
@@ -422,7 +423,6 @@ app.post('/api/admin/students', async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // បញ្ចូលទិន្នន័យដោយกำหนด role ជា 'student' ផ្ទាល់ក្នុងតារាង users
         const [result] = await db.query(
             'INSERT INTO users (full_name, email, password_hash, expire_date, role) VALUES (?, ?, ?, ?, ?)',
             [name, email, hashedPassword, expire_date, 'student']
