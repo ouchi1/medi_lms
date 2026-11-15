@@ -1,4 +1,3 @@
-// const API_BASE = 'http://localhost:5000/api';
 const API_BASE = "https://medi-lms-1.onrender.com/api";
 
 export const API = {
@@ -84,14 +83,4 @@ export const API = {
             body: JSON.stringify(schoolData)
         });
     }
-    
 };
-// ឧទាហរណ៍សម្រាប់ Node.js (express + mysql2)
-app.get('/api/test-db', async (req, res) => {
-  try {
-    const [rows] = await db.query('SELECT NOW() AS current_time');
-    res.json({ success: true, time: rows[0].current_time });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
