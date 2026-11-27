@@ -5,7 +5,9 @@ let authMode = 'login';
 let activeExam = { subjectId: null, questions: [], answers: {}, currentIndex: 0 };
 let skippedQuestions = [];
 let currentSchoolFilter = '';
-
+// ដាក់អថេរនេះនៅផ្នែកខាងលើក្បែរ currentSchoolFilter
+let currentVideoFolderId = null;
+let currentVideoFolderName = '';
 // 🔥 Function សម្រាប់បំប្លែង Link YouTube គ្រប់ទម្រង់ទៅជា Embed Link 🔥
 function getYouTubeEmbedUrl(url) {
     if (!url) return '';
@@ -1356,7 +1358,7 @@ function setupEvents() {
         };
     }
 
-    // 🟢 Admin: បន្ថែមវីដេអូមេរៀនថ្មី (Add Lesson Video) - គាំទ្រទាំង form submit និង button click
+    // 🟢 Admin: បន្ថែមវីដេអូមេរៀនថ្មី (Add Lesson Video)
     const inlineAddLessonModal = document.getElementById('inline-add-lesson-modal');
 
     async function handleAddLessonSubmit(e) {
@@ -1389,15 +1391,23 @@ function setupEvents() {
             modalRoot.querySelector('select');
 
         const openAddLessonBtn = document.getElementById('btn-open-add-lesson-modal');
+        const activeFolderCard = document.querySelector('#lesson-videos-view');
+
         const title = titleEl ? titleEl.value.trim() : '';
         const videoUrl = urlEl ? urlEl.value.trim() : '';
         const subjectId =
-            (subjectIdEl && subjectIdEl.value) ||
+            currentVideoFolderId ||
             (openAddLessonBtn && openAddLessonBtn.dataset.currentFolderId) ||
+            (subjectIdEl && subjectIdEl.value) ||
+            (activeFolderCard && activeFolderCard.dataset.folderId) ||
             '';
 
-        if (!title || !videoUrl || !subjectId) {
-            return alert('សូមបំពេញចំណងជើង, Link YouTube និង Folder មុខវិជ្ជាឱ្យបានគ្រប់គ្រាន់!');
+        if (!title || !videoUrl) {
+            return alert('សូមបំពេញចំណងជើងមេរៀន និង Link YouTube ឱ្យបានគ្រប់គ្រាន់!');
+        }
+
+        if (!subjectId) {
+            return alert('រកមិនឃើញ Folder មុខវិជ្ជាទេ! សូមបិទ modal ហើយចុចចូល Folder ម្តងទៀត។');
         }
 
         const user = JSON.parse(localStorage.getItem('medi_user') || 'null');
@@ -1418,7 +1428,13 @@ function setupEvents() {
             if (titleEl) titleEl.value = '';
             if (urlEl) urlEl.value = '';
             if (inlineAddLessonModal) inlineAddLessonModal.classList.add('hidden');
+
             await loadLessons();
+
+            if (currentVideoFolderId) {
+                const targetCard = document.querySelector(`.folder-card[data-folder-id="${currentVideoFolderId}"] .folder-content-click`);
+                if (targetCard) targetCard.click();
+            }
         } catch (err) {
             alert('មានបញ្ហាក្នុងការបន្ថែមវីដេអូ: ' + err.message);
         }
