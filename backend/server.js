@@ -54,7 +54,7 @@ app.post('/api/auth/register', async (req, res) => {
         );
         const userId = insertRes.rows[0].id;
 
-        await db.query('INSERT INTO student_profiles (user_id) VALUES ($1)', [userId]);
+        await db.query('INSERT INTO student_profiles (user_id) VALUES ($1::text)', [String(userId)]);
 
         res.status(201).json({ message: 'ចុះឈ្មោះជាសិស្សជោគជ័យ!' });
     } catch (err) {
@@ -141,7 +141,7 @@ app.get('/api/lessons', async (req, res) => {
         const lessonsRes = await db.query(`
             SELECT l.*, s.name as subject_name
             FROM lessons l
-            JOIN subjects s ON l.subject_id = s.id
+            JOIN subjects s ON l.subject_id::text = s.id::text
             ORDER BY l.id DESC
         `);
         res.json(lessonsRes.rows);
@@ -171,7 +171,7 @@ app.put('/api/lessons/:id', async (req, res) => {
         const { title, subjectId, videoUrl } = req.body;
 
         await db.query(
-            'UPDATE lessons SET title = $1, subject_id = $2, video_url = $3 WHERE id = $4',
+            'UPDATE lessons SET title = $1, subject_id = $2, video_url = $3 WHERE id::text = $4::text',
             [title, subjectId, videoUrl, lessonId]
         );
         res.json({ message: 'កែប្រែមេរៀនវីដេអូជោគជ័យ!' });
@@ -184,7 +184,7 @@ app.put('/api/lessons/:id', async (req, res) => {
 app.delete('/api/lessons/:id', async (req, res) => {
     try {
         const lessonId = req.params.id;
-        await db.query('DELETE FROM lessons WHERE id = $1', [lessonId]);
+        await db.query('DELETE FROM lessons WHERE id::text = $1::text', [lessonId]);
         res.json({ message: 'លុបមេរៀនវីដេអូជោគជ័យ!' });
     } catch (err) {
         console.error('Delete lesson error:', err);
@@ -201,8 +201,8 @@ app.get('/api/qcm/subjects', async (req, res) => {
         const subjectsRes = await db.query(`
             SELECT s.id, s.name, s.parent_id, s.school_id, s.type, p.name as parent_name, COUNT(q.id)::int as question_count
             FROM subjects s
-            LEFT JOIN subjects p ON s.parent_id = p.id
-            LEFT JOIN quizzes q ON s.id = q.subject_id
+            LEFT JOIN subjects p ON s.parent_id::text = p.id::text
+            LEFT JOIN quizzes q ON s.id::text = q.subject_id::text
             GROUP BY s.id, s.name, s.parent_id, s.school_id, s.type, p.name
             ORDER BY s.parent_id ASC NULLS FIRST, s.id ASC
         `);
@@ -245,7 +245,7 @@ app.put('/api/subjects/:id', async (req, res) => {
         const { name, parentId } = req.body;
 
         await db.query(
-            'UPDATE subjects SET name = $1, parent_id = $2 WHERE id = $3',
+            'UPDATE subjects SET name = $1, parent_id = $2 WHERE id::text = $3::text',
             [name, parentId ? parseInt(parentId, 10) : null, subjectId]
         );
         res.json({ message: 'កែប្រែមុខវិជ្ជាជោគជ័យ!' });
@@ -258,7 +258,7 @@ app.put('/api/subjects/:id', async (req, res) => {
 app.delete('/api/subjects/:id', async (req, res) => {
     try {
         const subjectId = req.params.id;
-        await db.query('DELETE FROM subjects WHERE id = $1', [subjectId]);
+        await db.query('DELETE FROM subjects WHERE id::text = $1::text', [subjectId]);
         res.json({ message: 'លុបមុខវិជ្ជាជោគជ័យ!' });
     } catch (err) {
         console.error('Delete subject error:', err);
@@ -273,11 +273,11 @@ app.delete('/api/subjects/:id', async (req, res) => {
 app.get('/api/qcm/questions/:subjectId', async (req, res) => {
     try {
         const subjectId = req.params.subjectId;
-        const questionsRes = await db.query('SELECT * FROM quizzes WHERE subject_id = $1', [subjectId]);
+        const questionsRes = await db.query('SELECT * FROM quizzes WHERE subject_id::text = $1::text', [subjectId]);
         const questions = questionsRes.rows;
 
         for (const q of questions) {
-            const optionsRes = await db.query('SELECT * FROM quiz_options WHERE quiz_id = $1', [q.id]);
+            const optionsRes = await db.query('SELECT * FROM quiz_options WHERE quiz_id::text = $1::text', [String(q.id)]);
             q.options = optionsRes.rows;
         }
         res.json(questions);
@@ -344,8 +344,8 @@ app.delete('/api/qcm/questions/:id', async (req, res) => {
     try {
         const questionId = req.params.id;
 
-        await db.query('DELETE FROM quiz_options WHERE quiz_id = $1', [questionId]);
-        await db.query('DELETE FROM quizzes WHERE id = $1', [questionId]);
+        await db.query('DELETE FROM quiz_options WHERE quiz_id::text = $1::text', [questionId]);
+        await db.query('DELETE FROM quizzes WHERE id::text = $1::text', [questionId]);
 
         res.json({ message: 'លុបសំណួរ QCM ជោគជ័យ!' });
     } catch (err) {
@@ -399,7 +399,7 @@ app.put('/api/schools/:id', async (req, res) => {
 
         if (!name) return res.status(400).json({ message: 'សូមបញ្ចូលឈ្មោះសាលារៀន!' });
 
-        const existingRes = await db.query('SELECT * FROM schools WHERE id = $1', [schoolId]);
+        const existingRes = await db.query('SELECT * FROM schools WHERE id::text = $1::text', [schoolId]);
         if (existingRes.rows.length === 0) {
             return res.status(404).json({ message: 'រកមិនឃើញសាលានេះទេ!' });
         }
@@ -410,7 +410,7 @@ app.put('/api/schools/:id', async (req, res) => {
         const finalDesc = (description !== undefined) ? description : currentSchool.description;
 
         await db.query(
-            'UPDATE schools SET name = $1, logo_type = $2, logo_url = $3, description = $4 WHERE id = $5',
+            'UPDATE schools SET name = $1, logo_type = $2, logo_url = $3, description = $4 WHERE id::text = $5::text',
             [name, finalLogoType, finalLogoUrl, finalDesc, schoolId]
         );
 
@@ -424,7 +424,7 @@ app.put('/api/schools/:id', async (req, res) => {
 app.delete('/api/schools/:id', async (req, res) => {
     try {
         const schoolId = req.params.id;
-        const delRes = await db.query('DELETE FROM schools WHERE id = $1', [schoolId]);
+        const delRes = await db.query('DELETE FROM schools WHERE id::text = $1::text', [schoolId]);
 
         if (delRes.rowCount === 0) {
             return res.status(404).json({ message: 'រកមិនឃើញសាលានេះទេ!' });
@@ -456,7 +456,7 @@ app.post('/api/admin/students', async (req, res) => {
         );
 
         const userId = insertRes.rows[0].id;
-        await db.query('INSERT INTO student_profiles (user_id) VALUES ($1)', [userId]);
+        await db.query('INSERT INTO student_profiles (user_id) VALUES ($1::text)', [String(userId)]);
 
         res.json({ message: 'បង្កើតគណនីសិស្ស និងកំណត់ថ្ងៃផុតកំណត់បានជោគជ័យ!', studentId: userId });
     } catch (err) {
