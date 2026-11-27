@@ -1732,6 +1732,81 @@ function setupEvents() {
             infoModal.classList.remove('hidden');
         };
     }
+    // 🛡️ ចាប់ Error ទាំងអស់ឱ្យលោត Alert ដើម្បីងាយមើលពេល Deploy
+    window.addEventListener('error', (event) => {
+        if (event && event.message) {
+            alert('JS Error: ' + event.message);
+        }
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+        const msg = event && event.reason ? (event.reason.message || String(event.reason)) : 'Unknown Promise Error';
+        alert('Promise Error: ' + msg);
+    });
+
+    // 🟢 Fallback ចាប់ប៊ូតុង "រក្សាទុកវីដេអូ" គ្រប់ករណី
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const btnText = (btn.textContent || '').trim();
+        if (!btnText.includes('រក្សាទុកវីដេអូ')) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const modal = btn.closest('.fixed') || document.getElementById('inline-add-lesson-modal') || document;
+        const inputs = Array.from(modal.querySelectorAll('input:not([type="hidden"])'));
+
+        const titleEl =
+            document.getElementById('inline-lesson-title') ||
+            document.getElementById('lesson-title') ||
+            inputs[0];
+
+        const urlEl =
+            document.getElementById('inline-lesson-video-url') ||
+            document.getElementById('lesson-video-url') ||
+            inputs[1];
+
+        const openAddLessonBtn = document.getElementById('btn-open-add-lesson-modal');
+        const subjectIdEl =
+            document.getElementById('inline-lesson-subject-id') ||
+            document.getElementById('lesson-select-subject');
+
+        const title = titleEl ? String(titleEl.value || '').trim() : '';
+        const videoUrl = urlEl ? String(urlEl.value || '').trim() : '';
+        const subjectId =
+            (typeof currentVideoFolderId !== 'undefined' && currentVideoFolderId) ||
+            (openAddLessonBtn && openAddLessonBtn.dataset.currentFolderId) ||
+            (subjectIdEl && subjectIdEl.value) ||
+            '';
+
+        if (!title || !videoUrl || !subjectId) {
+            return alert(`ខ្វះទិន្នន័យ: title="${title}", url="${videoUrl}", subjectId="${subjectId}"`);
+        }
+
+        const user = JSON.parse(localStorage.getItem('medi_user') || 'null');
+
+        try {
+            const res = await API.request('/lessons', {
+                method: 'POST',
+                body: JSON.stringify({
+                    title,
+                    subjectId: Number(subjectId),
+                    videoUrl,
+                    videoType: 'embed',
+                    createdBy: user && user.id ? user.id : 1
+                })
+            });
+
+            alert(res.message || 'បន្ថែមវីដេអូមេរៀនជោគជ័យ!');
+            if (titleEl) titleEl.value = '';
+            if (urlEl) urlEl.value = '';
+            if (modal && modal.classList) modal.classList.add('hidden');
+            await loadLessons();
+        } catch (err) {
+            alert('API Error (/lessons): ' + (err && err.message ? err.message : String(err)));
+        }
+    }, true);
 }
 
 // 🟢 មុខងារគ្រប់គ្រង Dark Mode
