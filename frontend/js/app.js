@@ -1366,40 +1366,38 @@ function setupEvents() {
         if (e && e.stopPropagation) e.stopPropagation();
 
         const modalRoot = inlineAddLessonModal || document;
+        const modalInputs = inlineAddLessonModal
+            ? Array.from(inlineAddLessonModal.querySelectorAll('input:not([type="hidden"])'))
+            : [];
 
         const titleEl =
             document.getElementById('inline-lesson-title') ||
             document.getElementById('lesson-title') ||
             document.getElementById('new-lesson-title') ||
-            modalRoot.querySelector('input[name="title"]') ||
-            modalRoot.querySelector('input[type="text"]');
+            modalInputs[0] ||
+            null;
 
         const urlEl =
             document.getElementById('inline-lesson-video-url') ||
             document.getElementById('lesson-video-url') ||
             document.getElementById('inline-lesson-url') ||
             document.getElementById('lesson-url') ||
-            modalRoot.querySelector('input[name="video_url"]') ||
-            modalRoot.querySelector('input[name="videoUrl"]') ||
-            modalRoot.querySelectorAll('input[type="text"]')[1] ||
-            modalRoot.querySelector('input[type="url"]');
+            modalInputs[1] ||
+            null;
 
         const subjectIdEl =
             document.getElementById('inline-lesson-subject-id') ||
             document.getElementById('lesson-select-subject') ||
             document.getElementById('inline-lesson-subject') ||
-            modalRoot.querySelector('select');
+            (inlineAddLessonModal && inlineAddLessonModal.querySelector('select'));
 
         const openAddLessonBtn = document.getElementById('btn-open-add-lesson-modal');
-        const activeFolderCard = document.querySelector('#lesson-videos-view');
-
-        const title = titleEl ? titleEl.value.trim() : '';
-        const videoUrl = urlEl ? urlEl.value.trim() : '';
+        const title = titleEl ? String(titleEl.value || '').trim() : '';
+        const videoUrl = urlEl ? String(urlEl.value || '').trim() : '';
         const subjectId =
             currentVideoFolderId ||
             (openAddLessonBtn && openAddLessonBtn.dataset.currentFolderId) ||
             (subjectIdEl && subjectIdEl.value) ||
-            (activeFolderCard && activeFolderCard.dataset.folderId) ||
             '';
 
         if (!title || !videoUrl) {
@@ -1437,37 +1435,6 @@ function setupEvents() {
             }
         } catch (err) {
             alert('មានបញ្ហាក្នុងការបន្ថែមវីដេអូ: ' + err.message);
-        }
-    }
-
-    const formAddLesson =
-        document.getElementById('form-add-lesson') ||
-        document.getElementById('inline-form-add-lesson') ||
-        (inlineAddLessonModal ? inlineAddLessonModal.querySelector('form') : null);
-
-    if (formAddLesson) {
-        formAddLesson.onsubmit = handleAddLessonSubmit;
-        formAddLesson.addEventListener('submit', handleAddLessonSubmit);
-    }
-
-    if (inlineAddLessonModal) {
-        const allButtons = Array.from(inlineAddLessonModal.querySelectorAll('button'));
-        const submitLessonBtn =
-            document.getElementById('btn-save-inline-lesson') ||
-            document.getElementById('btn-add-lesson-submit') ||
-            document.getElementById('btn-submit-inline-lesson') ||
-            allButtons.find(btn => btn.textContent.includes('រក្សាទុក')) ||
-            inlineAddLessonModal.querySelector('button[type="submit"]') ||
-            allButtons.find(btn =>
-                !btn.id.includes('close') &&
-                !btn.className.includes('close') &&
-                !btn.textContent.includes('បោះបង់')
-            );
-
-        if (submitLessonBtn) {
-            submitLessonBtn.type = 'button';
-            submitLessonBtn.onclick = handleAddLessonSubmit;
-            submitLessonBtn.addEventListener('click', handleAddLessonSubmit);
         }
     }
 
