@@ -1647,6 +1647,70 @@ function setupEvents() {
             infoModal.classList.remove('hidden');
         };
     }
+    // 🟢 Admin: បន្ថែមវីដេអូមេរៀនថ្មី (Add Lesson Video)
+    const inlineAddLessonModal = document.getElementById('inline-add-lesson-modal');
+    const formAddLesson =
+        document.getElementById('form-add-lesson') ||
+        document.getElementById('inline-form-add-lesson') ||
+        (inlineAddLessonModal ? inlineAddLessonModal.querySelector('form') : null);
+
+    if (formAddLesson) {
+        formAddLesson.onsubmit = async (e) => {
+            e.preventDefault();
+
+            const titleEl =
+                document.getElementById('inline-lesson-title') ||
+                document.getElementById('lesson-title') ||
+                formAddLesson.querySelector('input[name="title"]') ||
+                formAddLesson.querySelector('input[type="text"]');
+
+            const urlEl =
+                document.getElementById('inline-lesson-video-url') ||
+                document.getElementById('lesson-video-url') ||
+                formAddLesson.querySelector('input[name="video_url"]') ||
+                formAddLesson.querySelectorAll('input[type="text"]')[1] ||
+                formAddLesson.querySelector('input[type="url"]');
+
+            const subjectIdEl =
+                document.getElementById('inline-lesson-subject-id') ||
+                document.getElementById('lesson-select-subject') ||
+                formAddLesson.querySelector('select');
+
+            const openAddLessonBtn = document.getElementById('btn-open-add-lesson-modal');
+            const title = titleEl ? titleEl.value.trim() : '';
+            const videoUrl = urlEl ? urlEl.value.trim() : '';
+            const subjectId =
+                (subjectIdEl && subjectIdEl.value) ||
+                (openAddLessonBtn && openAddLessonBtn.dataset.currentFolderId) ||
+                '';
+
+            if (!title || !videoUrl || !subjectId) {
+                return alert('សូមបំពេញចំណងជើង, Link YouTube និង Folder មុខវិជ្ជាឱ្យបានគ្រប់គ្រាន់!');
+            }
+
+            const user = JSON.parse(localStorage.getItem('medi_user') || 'null');
+
+            try {
+                const res = await API.request('/lessons', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        title,
+                        subjectId: Number(subjectId),
+                        videoUrl,
+                        videoType: 'embed',
+                        createdBy: user && user.id ? user.id : 1
+                    })
+                });
+
+                alert(res.message || 'បន្ថែមវីដេអូមេរៀនជោគជ័យ!');
+                formAddLesson.reset();
+                if (inlineAddLessonModal) inlineAddLessonModal.classList.add('hidden');
+                await loadLessons();
+            } catch (err) {
+                alert('មានបញ្ហាក្នុងការបន្ថែមវីដេអូ: ' + err.message);
+            }
+        };
+    }
 }
 
 // 🟢 មុខងារគ្រប់គ្រង Dark Mode
