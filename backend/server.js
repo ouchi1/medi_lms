@@ -82,7 +82,6 @@ app.post('/api/auth/reset-password', async (req, res) => {
     }
 });
 
-// គាំទ្រទាំង /api/login និង /api/auth/login ដើម្បីការពារបញ្ហា 404 Not Found
 app.post(['/api/login', '/api/auth/login'], async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -95,7 +94,6 @@ app.post(['/api/login', '/api/auth/login'], async (req, res) => {
         const user = usersRes.rows[0];
         const userRole = user.role || 'student';
 
-        // ពិនិត្យថ្ងៃផុតកំណត់ (Expire Date) សម្រាប់សិស្ស
         if (userRole.toLowerCase() === 'student' && user.expire_date) {
             const today = new Date();
             const expireDate = new Date(user.expire_date);
@@ -370,12 +368,14 @@ app.get('/api/schools', async (req, res) => {
 
 app.post('/api/schools', async (req, res) => {
     try {
-        const { name, logo_type, logo_value, description } = req.body;
+        const { name, logo_type, logo_url, logo_value, description } = req.body;
         if (!name) return res.status(400).json({ message: 'សូមបញ្ចូលឈ្មោះសាលារៀន!' });
+
+        const finalLogo = logo_url || logo_value || '🏫';
 
         await db.query(
             'INSERT INTO schools (name, logo_type, logo_url, description) VALUES ($1, $2, $3, $4)',
-            [name, logo_type || 'emoji', logo_value || '🏫', description || '']
+            [name, logo_type || 'emoji', finalLogo, description || '']
         );
         res.status(201).json({ message: 'បន្ថែមសាលារៀនជោគជ័យ!' });
     } catch (err) {
@@ -438,7 +438,7 @@ app.delete('/api/schools/:id', async (req, res) => {
 });
 
 // ==========================================
-// 6. ADMIN CREATE STUDENT ROUTE (Assigns role = 'student' directly)
+// 6. ADMIN CREATE STUDENT ROUTE
 // ==========================================
 app.post('/api/admin/students', async (req, res) => {
     try {

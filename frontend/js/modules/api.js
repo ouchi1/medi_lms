@@ -58,6 +58,13 @@ export const API = {
         });
     },
 
+    addSubject(data) {
+        return this.request('/subjects', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+
     deleteSubject(subjectId) {
         return this.request(`/subjects/${subjectId}`, { method: 'DELETE' });
     },

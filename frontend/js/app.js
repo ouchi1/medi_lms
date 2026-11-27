@@ -4,7 +4,7 @@ import { API } from './modules/api.js';
 let authMode = 'login';
 let activeExam = { subjectId: null, questions: [], answers: {}, currentIndex: 0 };
 let skippedQuestions = [];
-let currentSchoolFilter = ''; 
+let currentSchoolFilter = '';
 
 // 🔥 Function សម្រាប់បំប្លែង Link YouTube គ្រប់ទម្រង់ទៅជា Embed Link 🔥
 function getYouTubeEmbedUrl(url) {
@@ -68,7 +68,7 @@ function initApp() {
     renderUserSession();
     setupNavigation();
     setupEvents();
-    setupDarkMode(); // 🟢 ហៅមុខងារ Dark Mode
+    setupDarkMode();
     loadLessons();
     loadQCMSubjects();
 
@@ -83,15 +83,15 @@ function initApp() {
             document.getElementById('school-details-view').classList.add('hidden');
             document.getElementById('qcm-exam-view').classList.remove('hidden');
             document.getElementById('qcm-result-view').classList.add('hidden');
-            
+
             renderQuestion();
-            
+
             const navQcmBtn = document.getElementById('nav-qcm');
             if (navQcmBtn) navQcmBtn.click();
             localStorage.setItem('active_tab', 'nav-qcm');
         } catch (error) {
             console.error("Error parsing saved exam state:", error);
-            localStorage.removeItem('exam_state'); 
+            localStorage.removeItem('exam_state');
         }
     }
 }
@@ -162,7 +162,7 @@ function setupNavigation() {
     }
 }
 
-// ២. Render User Session (បានកែសម្រួលការពារបញ្ហា Role និងអក្សរតូចធំ)
+// ២. Render User Session
 function renderUserSession() {
     const userStr = localStorage.getItem('medi_user');
     const guestView = document.getElementById('auth-guest-view');
@@ -174,11 +174,11 @@ function renderUserSession() {
             const user = JSON.parse(userStr);
             if (guestView) guestView.classList.add('hidden');
             if (userView) userView.classList.remove('hidden');
-            
+
             if (document.getElementById('user-display-name')) {
                 document.getElementById('user-display-name').innerText = user.name || user.email || 'User';
             }
-            
+
             const rawRole = user.role ? String(user.role).toUpperCase().trim() : '';
             if (document.getElementById('user-role-badge')) {
                 document.getElementById('user-role-badge').innerText = rawRole || 'GUEST';
@@ -186,13 +186,13 @@ function renderUserSession() {
 
             if (rawRole === 'ADMIN' || rawRole === 'TEACHER' || rawRole === 'SUPERADMIN') {
                 if (adminBtn) adminBtn.classList.remove('hidden');
-                
+
                 document.querySelectorAll('.admin-only').forEach(el => {
                     if (el) el.classList.remove('hidden');
                 });
             } else {
                 if (adminBtn) adminBtn.classList.add('hidden');
-                
+
                 document.querySelectorAll('.admin-only').forEach(el => {
                     if (el) el.classList.add('hidden');
                 });
@@ -211,13 +211,13 @@ function resetGuestUI(guestView, userView, adminBtn) {
     if (guestView) guestView.classList.remove('hidden');
     if (userView) userView.classList.add('hidden');
     if (adminBtn) adminBtn.classList.add('hidden');
-    
+
     document.querySelectorAll('.admin-only').forEach(el => {
         if (el) el.classList.add('hidden');
     });
 }
 
-// ៣. ទាញយកមេរៀនវីដេអូ (បិទមិនឱ្យមើលបើមិនទាន់ Login)
+// ៣. ទាញយកមេរៀនវីដេអូ
 async function loadLessons() {
     const foldersGrid = document.getElementById('lesson-folders-grid');
     const videosView = document.getElementById('lesson-videos-view');
@@ -247,7 +247,7 @@ async function loadLessons() {
     }
 
     try {
-        const subjects = await API.request('/subjects'); 
+        const subjects = await API.request('/subjects');
         const lessons = await API.getLessons();
 
         if (!subjects || !Array.isArray(subjects) || !Array.isArray(lessons)) {
@@ -359,7 +359,7 @@ async function loadLessons() {
                         document.getElementById('edit-lesson-id').value = btn.dataset.id;
                         document.getElementById('edit-lesson-title').value = btn.dataset.title;
                         document.getElementById('edit-lesson-video-url').value = btn.dataset.url;
-                        
+
                         const editSubjectSelect = document.getElementById('edit-lesson-subject');
                         if (editSubjectSelect) {
                             try {
@@ -441,8 +441,8 @@ async function loadLessons() {
                 document.getElementById('inline-add-lesson-modal').classList.remove('hidden');
             };
         }
-    } catch (e) { 
-        console.error('Error loading lessons:', e.message); 
+    } catch (e) {
+        console.error('Error loading lessons:', e.message);
         foldersGrid.innerHTML = `<div class="col-span-3 text-center py-10 text-red-500">មានបញ្ហាក្នុងការទាញមេរៀន: ${e.message}</div>`;
     }
 }
@@ -454,14 +454,14 @@ async function loadQCMSubjects() {
     const schoolCard = document.getElementById('school-card-view');
     const schoolDetails = document.getElementById('school-details-view');
     const btnBackSchool = document.getElementById('btn-back-to-school');
-    
+
     const currentSchoolLogo = document.getElementById('current-school-logo');
     const currentSchoolName = document.getElementById('current-school-name');
 
     try {
         const subjects = await API.getQCMSubjects();
         let schools = [];
-        
+
         try {
             schools = await API.getSchools();
             if (!Array.isArray(schools) || schools.length === 0) throw new Error("No schools");
@@ -495,25 +495,27 @@ async function loadQCMSubjects() {
             yearSelect.innerHTML = yearOptions;
         }
 
-        const schoolGrid = schoolCard.querySelector('.grid');
-        schoolGrid.innerHTML = schools.map(school => {
-            let cleanLogo = school.logo_url;
-            if (!cleanLogo || typeof cleanLogo !== 'string' || cleanLogo.includes('object')) {
-                cleanLogo = '🏫';
-            }
+        const schoolGrid = schoolCard ? schoolCard.querySelector('.grid') : null;
+        if (schoolGrid) {
+            schoolGrid.innerHTML = schools.map(school => {
+                let cleanLogo = school.logo_url;
+                if (!cleanLogo || typeof cleanLogo !== 'string' || cleanLogo.includes('object')) {
+                    cleanLogo = '🏫';
+                }
 
-            let logoHtml = cleanLogo.startsWith('http') || cleanLogo.startsWith('data:image') ? 
-                `<img src="${cleanLogo}" alt="logo" class="w-20 h-20 object-contain rounded-2xl mb-4 bg-white p-1 border border-slate-200 shadow-sm">` : 
-                `<div class="text-4xl mb-4">${cleanLogo}</div>`;
+                let logoHtml = cleanLogo.startsWith('http') || cleanLogo.startsWith('data:image') ?
+                    `<img src="${cleanLogo}" alt="logo" class="w-20 h-20 object-contain rounded-2xl mb-4 bg-white p-1 border border-slate-200 shadow-sm">` :
+                    `<div class="text-4xl mb-4">${cleanLogo}</div>`;
 
-            return `
-                <div class="school-select-card bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition cursor-pointer flex flex-col items-center text-center group" data-school-id="${school.id}" data-school-name="${school.name}">
-                    ${logoHtml}
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">${school.name}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">${school.description || ''}</p>
-                </div>
-            `;
-        }).join('');
+                return `
+                    <div class="school-select-card bg-white dark:bg-slate-800 rounded-3xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-lg transition cursor-pointer flex flex-col items-center text-center group" data-school-id="${school.id}" data-school-name="${school.name}">
+                        ${logoHtml}
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-1">${school.name}</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">${school.description || ''}</p>
+                    </div>
+                `;
+            }).join('');
+        }
 
         const schoolIdSelect = document.getElementById('new-folder-school-id');
         if (schoolIdSelect) {
@@ -556,7 +558,7 @@ async function loadQCMSubjects() {
 
                 schoolCard.classList.add('hidden');
                 schoolDetails.classList.remove('hidden');
-                
+
                 const currentYear = yearSelect ? yearSelect.value : 'all';
                 renderSubjectGrid(subjects, schoolId, currentYear, getParentId);
             };
@@ -566,7 +568,7 @@ async function loadQCMSubjects() {
             btnBackSchool.onclick = () => {
                 schoolDetails.classList.add('hidden');
                 schoolCard.classList.remove('hidden');
-                currentSchoolFilter = ''; 
+                currentSchoolFilter = '';
             };
         }
 
@@ -584,7 +586,7 @@ async function loadQCMSubjects() {
                 const hasParent = getParentId(s) !== null;
                 return `<option value="${s.id}">${hasParent ? `↳ ` : ''}${s.name} (ID: ${s.id})</option>`;
             }).join('');
-            
+
             const adminSelect = document.getElementById('qcm-select-subject');
             const adminFilterSelect = document.getElementById('admin-filter-subject');
             const excelImportSelect = document.getElementById('excel-import-subject-id');
@@ -601,12 +603,12 @@ async function loadQCMSubjects() {
 
             renderAdminSubjectsList(qcmOnlySubjects, getParentId);
         }
-    } catch (e) { 
-        console.error('Error loading subjects:', e.message); 
+    } catch (e) {
+        console.error('Error loading subjects:', e.message);
     }
 }
 
-// ៥. Function Render Subject Grid (បានភ្ជាប់ Class subject-card ត្រឹមត្រូវ អាចចុចចូលធ្វើតេស្តបាន)
+// ៥. Function Render Subject Grid
 function renderSubjectGrid(allSubjects, schoolId, yearFilter, getParentId) {
     const grid = document.getElementById('qcm-subjects-grid');
     if (!grid) return;
@@ -618,7 +620,7 @@ function renderSubjectGrid(allSubjects, schoolId, yearFilter, getParentId) {
             if (getParentId(s) === null) {
                 return parseInt(s.school_id) === parseInt(schoolId);
             }
-            return true; 
+            return true;
         });
     }
 
@@ -626,12 +628,12 @@ function renderSubjectGrid(allSubjects, schoolId, yearFilter, getParentId) {
         filteredSubjects = filteredSubjects.filter(s => {
             const nameMatch = s.name && s.name.toUpperCase().includes(yearFilter.toUpperCase());
             const descMatch = s.description && s.description.toUpperCase().includes(yearFilter.toUpperCase());
-            
+
             if (getParentId(s) === null) {
-                const hasMatchingChild = allSubjects.some(child => 
-                    getParentId(child) === parseInt(s.id) && 
+                const hasMatchingChild = allSubjects.some(child =>
+                    getParentId(child) === parseInt(s.id) &&
                     ((child.name && child.name.toUpperCase().includes(yearFilter.toUpperCase())) ||
-                     (child.description && child.description.toUpperCase().includes(yearFilter.toUpperCase())))
+                        (child.description && child.description.toUpperCase().includes(yearFilter.toUpperCase())))
                 );
                 return nameMatch || descMatch || hasMatchingChild;
             } else {
@@ -669,7 +671,7 @@ function renderSubjectGrid(allSubjects, schoolId, yearFilter, getParentId) {
                     </div>
                     <span id="folder-arrow-${rootFolder.id}" class="text-xl font-bold text-slate-400 transition-transform">▼</span>
                 </div>
-                
+
                 <div id="folder-container-${rootFolder.id}" class="hidden pt-4 mt-4 border-t border-slate-100 dark:border-slate-700 space-y-4">
         `;
 
@@ -690,11 +692,11 @@ function renderSubjectGrid(allSubjects, schoolId, yearFilter, getParentId) {
                                 </div>
                                 <span id="subfolder-arrow-${l1Child.id}" class="text-sm font-bold text-slate-400 transition-transform">▼</span>
                             </div>
-                            
+
                             <div id="subfolder-container-${l1Child.id}" class="hidden space-y-3 pt-3 mt-3 border-t border-slate-200 dark:border-slate-700">
                                 ${level2Children.map(l2Child => {
                                     const grandChildren = allSubjects.filter(s => getParentId(s) === parseInt(l2Child.id) && String(s.type || '').trim().toLowerCase() === 'qcm');
-                                    
+
                                     if (grandChildren.length > 0) {
                                         return `
                                             <div class="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-3">
@@ -873,8 +875,8 @@ function renderAdminSchoolsList(schools) {
             logoDisplay = school.logo_url;
         }
 
-        let logoHtml = logoDisplay.startsWith('http') || logoDisplay.startsWith('data:image') 
-            ? `<img src="${logoDisplay}" class="w-8 h-8 object-contain rounded-lg">` 
+        let logoHtml = logoDisplay.startsWith('http') || logoDisplay.startsWith('data:image')
+            ? `<img src="${logoDisplay}" class="w-8 h-8 object-contain rounded-lg">`
             : `<span class="text-2xl">${logoDisplay}</span>`;
 
         return `
@@ -886,7 +888,7 @@ function renderAdminSchoolsList(schools) {
                         <span class="text-xs text-slate-500 dark:text-slate-400">${school.description || ''}</span>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center gap-2">
                     <button type="button" data-id="${school.id}" data-name="${school.name}" data-logo="${typeof school.logo_url === 'string' ? school.logo_url : ''}" data-logotype="${school.logo_type || 'emoji'}" data-desc="${school.description || ''}" class="btn-edit-school px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg text-xs font-bold transition">
                         ✏️ កែឈ្មោះ និងរូប
@@ -932,7 +934,7 @@ function renderAdminSchoolsList(schools) {
                         method: 'DELETE'
                     });
                     alert(res.message || 'លុបសាលារៀនបានជោគជ័យ!');
-                    
+
                     const schools = await API.getSchools();
                     renderAdminSchoolsList(schools);
                     loadQCMSubjects();
@@ -947,17 +949,17 @@ function renderAdminSchoolsList(schools) {
 function renderAdminSubjectsList(subjects, getParentId) {
     const adminSubjectsList = document.getElementById('admin-subjects-list');
     if (!adminSubjectsList) return;
-    
+
     let adminListHtml = '';
     const parentFolders = subjects.filter(s => getParentId(s) === null);
 
     parentFolders.forEach(folder => {
         const level1Children = subjects.filter(s => getParentId(s) === parseInt(folder.id));
-        
-        const schoolBadge = folder.school_id 
-            ? `<span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md ml-2">សាលា ID: ${folder.school_id}</span>` 
+
+        const schoolBadge = folder.school_id
+            ? `<span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md ml-2">សាលា ID: ${folder.school_id}</span>`
             : `<span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md ml-2">គ្មានសាលា</span>`;
-            
+
         const typeBadge = String(folder.type || '').trim().toLowerCase() === 'video'
             ? `<span class="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-md ml-2">វីដេអូ</span>`
             : `<span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md ml-2">QCM</span>`;
@@ -977,14 +979,14 @@ function renderAdminSubjectsList(subjects, getParentId) {
                         <button type="button" data-id="${folder.id}" class="btn-delete-subject px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-lg text-xs font-bold transition">🗑️ លុប</button>
                     </div>
                 </div>
-                
+
                 <div id="admin-folder-container-${folder.id}" class="hidden pt-3 mt-3 border-t border-slate-100 dark:border-slate-700 space-y-2">
         `;
 
         if (level1Children.length > 0) {
             level1Children.forEach(l1 => {
                 const level2Children = subjects.filter(s => getParentId(s) === parseInt(l1.id));
-                
+
                 adminListHtml += `
                     <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700 ml-4">
                         <div class="flex items-center justify-between">
@@ -1064,10 +1066,10 @@ function renderAdminSubjectsList(subjects, getParentId) {
             e.stopPropagation();
             const id = btn.dataset.id;
             const oldName = btn.dataset.name;
-            const oldParentId = btn.dataset.parent; 
-            
+            const oldParentId = btn.dataset.parent;
+
             const newName = prompt('សូមបញ្ចូលឈ្មោះមុខវិជ្ជាថ្មី:', oldName);
-            
+
             if (newName && newName.trim() !== "" && newName !== oldName) {
                 try {
                     const res = await API.updateSubject(id, newName.trim(), oldParentId || null);
@@ -1082,9 +1084,8 @@ function renderAdminSubjectsList(subjects, getParentId) {
     });
 }
 
-/// ៧. ទាញយកសំណួរ QCM (បានបន្ថែមលក្ខខណ្ឌការពារ ត្រូវតែ Login មុនទើបអាចធ្វើតេស្តបាន)
+// ៧. ទាញយកសំណួរ QCM
 async function startExam(subjectId) {
-    // 🟢 ពិនិត្យមើលការ Login (ប្រសិនបើគ្មាន Token ឬ User មិនទាន់ Login មិនអនុញ្ញាតឱ្យធ្វើតេស្តទេ)
     const user = JSON.parse(localStorage.getItem('medi_user'));
     const token = localStorage.getItem('token');
 
@@ -1104,7 +1105,7 @@ async function startExam(subjectId) {
         }
 
         activeExam = { subjectId, questions, answers: {}, currentIndex: 0 };
-        skippedQuestions = []; 
+        skippedQuestions = [];
 
         localStorage.setItem('exam_state', JSON.stringify({
             subjectId: subjectId,
@@ -1118,7 +1119,7 @@ async function startExam(subjectId) {
         document.getElementById('school-details-view').classList.add('hidden');
         document.getElementById('qcm-exam-view').classList.remove('hidden');
         document.getElementById('qcm-result-view').classList.add('hidden');
-        
+
         renderQuestion();
     } catch (e) { alert(e.message); }
 }
@@ -1126,7 +1127,7 @@ async function startExam(subjectId) {
 function renderQuestion() {
     const { questions, currentIndex, answers } = activeExam;
     const q = questions[currentIndex];
-    
+
     document.getElementById('exam-question-text').innerText = `សំណួរទី ${currentIndex + 1}/${questions.length}: ${q.question_text}`;
 
     const container = document.getElementById('exam-options-container');
@@ -1139,7 +1140,7 @@ function renderQuestion() {
     document.querySelectorAll('.opt-btn').forEach(btn => {
         btn.onclick = () => {
             activeExam.answers[q.id] = parseInt(btn.dataset.id);
-            
+
             const skippedIndex = skippedQuestions.indexOf(activeExam.currentIndex);
             if (skippedIndex > -1) {
                 skippedQuestions.splice(skippedIndex, 1);
@@ -1153,7 +1154,7 @@ function renderQuestion() {
                 skippedQuestions: skippedQuestions
             }));
 
-            renderQuestion(); 
+            renderQuestion();
         };
     });
 
@@ -1222,7 +1223,6 @@ function setupEvents() {
     const forgotLinkContainer = document.getElementById('forgot-password-link-container');
     const authSubmitBtn = document.getElementById('btn-auth-submit');
 
-    // 🟢 ប៊ូតុងបើក Login Modal
     const btnOpenLogin = document.getElementById('btn-open-login');
     if (btnOpenLogin) {
         btnOpenLogin.onclick = () => {
@@ -1236,10 +1236,9 @@ function setupEvents() {
         };
     }
 
-    // 🟢 ប៊ូតុងបិទ Modal (✕) ទូទៅ និងការចុចលើផ្ទៃក្រៅ (Backdrop)
     const modalCloseButtons = document.querySelectorAll('[id^="btn-close-"], .btn-close-modal');
     modalCloseButtons.forEach(btn => {
-        btn.onclick = (e) => {
+        btn.onclick = () => {
             const modal = btn.closest('.fixed');
             if (modal) {
                 modal.classList.add('hidden');
@@ -1255,7 +1254,6 @@ function setupEvents() {
         };
     });
 
-    // 🟢 គ្រប់គ្រងការប្តូររវាង Emoji, Upload និង URL ពេលបន្ថែមសាលារៀនថ្មី
     const schoolLogoRadios = document.querySelectorAll('input[name="logo_type"]');
     schoolLogoRadios.forEach(radio => {
         radio.onchange = (e) => {
@@ -1274,26 +1272,109 @@ function setupEvents() {
         };
     });
 
-    // 🟢 គ្រប់គ្រងការ Submit Form បន្ថែមសាលារៀនថ្មី
+    // 🟢 Admin: បន្ថែមមុខវិជ្ជាថ្មី (New Subject)
+    const formAddSubject = document.getElementById('form-add-subject');
+    if (formAddSubject) {
+        formAddSubject.onsubmit = async (e) => {
+            e.preventDefault();
+
+            const nameInput =
+                document.getElementById('subject-name') ||
+                document.getElementById('new-subject-name') ||
+                formAddSubject.querySelector('input[type="text"]');
+
+            const parentSelect =
+                document.getElementById('subject-parent-select') ||
+                document.getElementById('new-folder-parent-id') ||
+                formAddSubject.querySelector('select');
+
+            const schoolSelect =
+                document.getElementById('subject-school-select') ||
+                document.getElementById('new-folder-school-id');
+
+            const name = nameInput ? nameInput.value.trim() : '';
+            const parentId = parentSelect && parentSelect.value ? parentSelect.value : null;
+            const schoolId = schoolSelect && schoolSelect.value ? schoolSelect.value : null;
+
+            if (!name) {
+                return alert('សូមបញ្ចូលឈ្មោះមុខវិជ្ជា!');
+            }
+
+            try {
+                const res = await API.addSubject({
+                    name,
+                    parentId,
+                    schoolId,
+                    type: 'qcm'
+                });
+
+                alert(res.message || 'បន្ថែមមុខវិជ្ជាថ្មីជោគជ័យ!');
+                formAddSubject.reset();
+                await loadQCMSubjects();
+                await loadLessons();
+            } catch (err) {
+                alert('មានបញ្ហាក្នុងការបន្ថែមមុខវិជ្ជា: ' + err.message);
+            }
+        };
+    }
+
+    // 🟢 Admin: បង្កើត Folder មេរៀនវីដេអូថ្មី (Add Video Folder)
+    const formAddVideoFolder = document.getElementById('form-add-video-folder');
+    if (formAddVideoFolder) {
+        formAddVideoFolder.onsubmit = async (e) => {
+            e.preventDefault();
+
+            const nameInput =
+                document.getElementById('video-folder-name') ||
+                document.getElementById('new-video-folder-name') ||
+                formAddVideoFolder.querySelector('input[type="text"]');
+
+            const name = nameInput ? nameInput.value.trim() : '';
+
+            if (!name) {
+                return alert('សូមបញ្ចូលឈ្មោះ Folder មេរៀនវីដេអូ!');
+            }
+
+            try {
+                const res = await API.addSubject({
+                    name,
+                    parentId: null,
+                    schoolId: null,
+                    type: 'video'
+                });
+
+                alert(res.message || 'បង្កើត Folder មេរៀនវីដេអូថ្មីជោគជ័យ!');
+                formAddVideoFolder.reset();
+                await loadLessons();
+                await loadQCMSubjects();
+            } catch (err) {
+                alert('មានបញ្ហាក្នុងការបង្កើត Folder វីដេអូ: ' + err.message);
+            }
+        };
+    }
+
+    // 🟢 Admin: បន្ថែមសាលារៀនថ្មី (New School)
     const formAddSchool = document.getElementById('form-add-school');
     if (formAddSchool) {
         formAddSchool.onsubmit = async (e) => {
             e.preventDefault();
             const name = document.getElementById('school-name').value.trim();
             const description = document.getElementById('school-desc').value.trim();
-            
+
             const logoTypeEl = document.querySelector('input[name="logo_type"]:checked');
             const logoType = logoTypeEl ? logoTypeEl.value : 'emoji';
-            
+
             let logoUrl = '';
             if (logoType === 'emoji') {
                 logoUrl = document.getElementById('school-icon-emoji').value.trim() || '🏫';
             } else if (logoType === 'url') {
-                logoUrl = document.getElementById('school-icon-url').value.trim();
+                logoUrl = document.getElementById('school-icon-url').value.trim() || '🏫';
             } else if (logoType === 'upload') {
                 const fileInput = document.getElementById('school-icon-file');
                 if (fileInput && fileInput.files[0]) {
                     logoUrl = await toBase64(fileInput.files[0]);
+                } else {
+                    logoUrl = '🏫';
                 }
             }
 
@@ -1302,14 +1383,16 @@ function setupEvents() {
             }
 
             try {
-                const res = await API.request('/schools', {
-                    method: 'POST',
-                    body: JSON.stringify({ name, description, logo_type: logoType, logo_url: logoUrl })
+                const res = await API.addSchool({
+                    name,
+                    description,
+                    logo_type: logoType,
+                    logo_url: logoUrl
                 });
 
                 alert(res.message || 'បង្កើតសាលារៀនថ្មីបានជោគជ័យ!');
                 formAddSchool.reset();
-                loadQCMSubjects();
+                await loadQCMSubjects();
             } catch (err) {
                 alert('មានបញ្ហា: ' + err.message);
             }
@@ -1341,13 +1424,13 @@ function setupEvents() {
         btnLogout.onclick = () => {
             localStorage.removeItem('token');
             localStorage.removeItem('medi_user');
-            localStorage.removeItem('exam_state'); 
+            localStorage.removeItem('exam_state');
             renderUserSession();
             loadLessons();
         };
     }
 
-    // Admin Quick Add Student with Expire Date
+    // 🟢 Admin: Quick Add Student with Expire Date
     const formAdminAddStudent = document.getElementById('form-admin-add-student');
     if (formAdminAddStudent) {
         formAdminAddStudent.onsubmit = async (e) => {
@@ -1362,12 +1445,12 @@ function setupEvents() {
             }
 
             try {
-                await API.request('/admin/students', {
+                const res = await API.request('/admin/students', {
                     method: 'POST',
                     body: JSON.stringify({ name, email, password, expire_date: expireDate, role: 'student' })
                 });
 
-                alert('បង្កើតគណនីសិស្ស និងកំណត់ថ្ងៃផុតកំណត់បានជោគជ័យ!');
+                alert(res.message || 'បង្កើតគណនីសិស្ស និងកំណត់ថ្ងៃផុតកំណត់បានជោគជ័យ!');
                 formAdminAddStudent.reset();
             } catch (err) {
                 alert('មានបញ្ហា: ' + err.message);
@@ -1379,10 +1462,10 @@ function setupEvents() {
     const btnPrevQ = document.getElementById('btn-prev-q');
     if (btnPrevQ) {
         btnPrevQ.onclick = () => {
-            if (activeExam.currentIndex > 0) { 
-                activeExam.currentIndex--; 
-                localStorage.setItem('exam_state', JSON.stringify({...activeExam, skippedQuestions}));
-                renderQuestion(); 
+            if (activeExam.currentIndex > 0) {
+                activeExam.currentIndex--;
+                localStorage.setItem('exam_state', JSON.stringify({ ...activeExam, skippedQuestions }));
+                renderQuestion();
             }
         };
     }
@@ -1399,10 +1482,10 @@ function setupEvents() {
                 }
             }
 
-            if (activeExam.currentIndex < activeExam.questions.length - 1) { 
-                activeExam.currentIndex++; 
-                localStorage.setItem('exam_state', JSON.stringify({...activeExam, skippedQuestions}));
-                renderQuestion(); 
+            if (activeExam.currentIndex < activeExam.questions.length - 1) {
+                activeExam.currentIndex++;
+                localStorage.setItem('exam_state', JSON.stringify({ ...activeExam, skippedQuestions }));
+                renderQuestion();
             }
         };
     }
@@ -1410,7 +1493,7 @@ function setupEvents() {
     const btnExitExam = document.getElementById('btn-exit-exam');
     if (btnExitExam) {
         btnExitExam.onclick = () => {
-            localStorage.removeItem('exam_state'); 
+            localStorage.removeItem('exam_state');
             document.getElementById('qcm-exam-view').classList.add('hidden');
             document.getElementById('school-details-view').classList.remove('hidden');
         };
@@ -1434,8 +1517,8 @@ function setupEvents() {
                     score++;
                 }
             });
-            
-            localStorage.removeItem('exam_state'); 
+
+            localStorage.removeItem('exam_state');
 
             document.getElementById('qcm-exam-view').classList.add('hidden');
             document.getElementById('qcm-result-view').classList.remove('hidden');
@@ -1456,7 +1539,7 @@ function setupEvents() {
                                     ${isCorrect ? '✓ ត្រឹមត្រូវ' : '✕ មិនត្រឹមត្រូវ'}
                                 </span>
                             </div>
-                            
+
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
                                 <div class="p-2 rounded-xl bg-white border ${isCorrect ? 'border-emerald-200 text-emerald-900 font-semibold' : 'border-red-200 text-red-900'}">
                                     <b>ចម្លើយរបស់អ្នក:</b> ${q.options.find(o => o.id === studentAnsId)?.option_text || 'មិនបានឆ្លើយ'}
@@ -1485,7 +1568,8 @@ function setupEvents() {
             document.getElementById('school-details-view').classList.remove('hidden');
         };
     }
-    // 🟢 គ្រប់គ្រង Footer Links (អំពីយើង, ជំនួយ, គោលការណ៍ភាពឯកជន, ទំនាក់ទំនង)
+
+    // 🟢 Footer Links
     const infoModal = document.getElementById('info-modal');
     const infoModalTitle = document.getElementById('info-modal-title');
     const infoModalContent = document.getElementById('info-modal-content');
@@ -1549,7 +1633,7 @@ function setupEvents() {
                     <p>📧 <b>Email:</b> medi_lms@gmail.com</p>
                     <p>📞 <b>ទូរស័ព្ទលេខ:</b> +855 96 97 73 429 </p>
                     <p>🏫 <b>អាសយដ្ឋាន:</b> រាជធានីភ្នំពេញ, ប្រទេសកម្ពុជា</p>
-                    
+
                     <div class="pt-2 border-t border-slate-200 dark:border-slate-700 flex items-center gap-3">
                         <a href="https://t.me/kroengouchimd1" target="_blank" class="flex-1 py-2 px-3 bg-sky-500 text-white rounded-xl text-center font-bold hover:bg-sky-600 transition flex items-center justify-center gap-1.5">
                             ✈️ Telegram
@@ -1569,7 +1653,7 @@ function setupEvents() {
 function setupDarkMode() {
     const themeToggleBtn = document.getElementById('btn-theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
-    
+
     const currentTheme = localStorage.getItem('theme') || 'light';
     if (currentTheme === 'dark') {
         document.documentElement.classList.add('dark');
@@ -1579,10 +1663,10 @@ function setupDarkMode() {
     if (themeToggleBtn) {
         themeToggleBtn.onclick = () => {
             document.documentElement.classList.toggle('dark');
-            
+
             const isDark = document.documentElement.classList.contains('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            
+
             if (themeIcon) {
                 themeIcon.innerText = isDark ? '☀️' : '🌙';
             }
