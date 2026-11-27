@@ -5,9 +5,9 @@ let authMode = 'login';
 let activeExam = { subjectId: null, questions: [], answers: {}, currentIndex: 0 };
 let skippedQuestions = [];
 let currentSchoolFilter = '';
-// ដាក់អថេរនេះនៅផ្នែកខាងលើក្បែរ currentSchoolFilter
 let currentVideoFolderId = null;
 let currentVideoFolderName = '';
+
 // 🔥 Function សម្រាប់បំប្លែង Link YouTube គ្រប់ទម្រង់ទៅជា Embed Link 🔥
 function getYouTubeEmbedUrl(url) {
     if (!url) return '';
@@ -316,13 +316,23 @@ async function loadLessons() {
                 const folderId = Number(card.dataset.folderId);
                 const folderName = card.dataset.folderName;
 
+                currentVideoFolderId = folderId;
+                currentVideoFolderName = folderName;
+
                 foldersGrid.classList.add('hidden');
-                videosView.classList.remove('hidden');
-                currentFolderTitle.innerText = folderName;
+                if (videosView) {
+                    videosView.classList.remove('hidden');
+                    videosView.dataset.folderId = String(folderId);
+                }
+                if (currentFolderTitle) currentFolderTitle.innerText = folderName;
 
                 const openAddLessonBtn = document.getElementById('btn-open-add-lesson-modal');
                 if (openAddLessonBtn) {
-                    openAddLessonBtn.dataset.currentFolderId = folderId;
+                    openAddLessonBtn.dataset.currentFolderId = String(folderId);
+                }
+                const inlineSubEl = document.getElementById('inline-lesson-subject-id');
+                if (inlineSubEl) {
+                    inlineSubEl.value = String(folderId);
                 }
 
                 const childrenIds = videoChildSubjects
@@ -428,6 +438,8 @@ async function loadLessons() {
 
         if (btnBackToFolders) {
             btnBackToFolders.onclick = () => {
+                currentVideoFolderId = null;
+                currentVideoFolderName = '';
                 videosView.classList.add('hidden');
                 foldersGrid.classList.remove('hidden');
             };
@@ -436,11 +448,14 @@ async function loadLessons() {
         const openAddLessonBtn = document.getElementById('btn-open-add-lesson-modal');
         if (openAddLessonBtn) {
             openAddLessonBtn.onclick = () => {
-                const currentFolderId = openAddLessonBtn.dataset.currentFolderId;
-                if (!currentFolderId) return alert('សូមជ្រើសរើស Folder ជាមុនសិន!');
+                const targetFolderId = currentVideoFolderId || openAddLessonBtn.dataset.currentFolderId;
+                if (!targetFolderId) return alert('សូមជ្រើសរើស Folder ជាមុនសិន!');
 
-                const inlineSubjectEl = document.getElementById('inline-lesson-subject-id');
-                if (inlineSubjectEl) inlineSubjectEl.value = currentFolderId;
+                currentVideoFolderId = Number(targetFolderId);
+                openAddLessonBtn.dataset.currentFolderId = String(targetFolderId);
+
+                const inlineSubEl = document.getElementById('inline-lesson-subject-id');
+                if (inlineSubEl) inlineSubEl.value = String(targetFolderId);
 
                 const inlineModal = document.getElementById('inline-add-lesson-modal');
                 if (inlineModal) inlineModal.classList.remove('hidden');
@@ -1358,86 +1373,6 @@ function setupEvents() {
         };
     }
 
-    // 🟢 Admin: បន្ថែមវីដេអូមេរៀនថ្មី (Add Lesson Video)
-    const inlineAddLessonModal = document.getElementById('inline-add-lesson-modal');
-
-    async function handleAddLessonSubmit(e) {
-        if (e && e.preventDefault) e.preventDefault();
-        if (e && e.stopPropagation) e.stopPropagation();
-
-        const modalRoot = inlineAddLessonModal || document;
-        const modalInputs = inlineAddLessonModal
-            ? Array.from(inlineAddLessonModal.querySelectorAll('input:not([type="hidden"])'))
-            : [];
-
-        const titleEl =
-            document.getElementById('inline-lesson-title') ||
-            document.getElementById('lesson-title') ||
-            document.getElementById('new-lesson-title') ||
-            modalInputs[0] ||
-            null;
-
-        const urlEl =
-            document.getElementById('inline-lesson-video-url') ||
-            document.getElementById('lesson-video-url') ||
-            document.getElementById('inline-lesson-url') ||
-            document.getElementById('lesson-url') ||
-            modalInputs[1] ||
-            null;
-
-        const subjectIdEl =
-            document.getElementById('inline-lesson-subject-id') ||
-            document.getElementById('lesson-select-subject') ||
-            document.getElementById('inline-lesson-subject') ||
-            (inlineAddLessonModal && inlineAddLessonModal.querySelector('select'));
-
-        const openAddLessonBtn = document.getElementById('btn-open-add-lesson-modal');
-        const title = titleEl ? String(titleEl.value || '').trim() : '';
-        const videoUrl = urlEl ? String(urlEl.value || '').trim() : '';
-        const subjectId =
-            currentVideoFolderId ||
-            (openAddLessonBtn && openAddLessonBtn.dataset.currentFolderId) ||
-            (subjectIdEl && subjectIdEl.value) ||
-            '';
-
-        if (!title || !videoUrl) {
-            return alert('សូមបំពេញចំណងជើងមេរៀន និង Link YouTube ឱ្យបានគ្រប់គ្រាន់!');
-        }
-
-        if (!subjectId) {
-            return alert('រកមិនឃើញ Folder មុខវិជ្ជាទេ! សូមបិទ modal ហើយចុចចូល Folder ម្តងទៀត។');
-        }
-
-        const user = JSON.parse(localStorage.getItem('medi_user') || 'null');
-
-        try {
-            const res = await API.request('/lessons', {
-                method: 'POST',
-                body: JSON.stringify({
-                    title,
-                    subjectId: Number(subjectId),
-                    videoUrl,
-                    videoType: 'embed',
-                    createdBy: user && user.id ? user.id : 1
-                })
-            });
-
-            alert(res.message || 'បន្ថែមវីដេអូមេរៀនជោគជ័យ!');
-            if (titleEl) titleEl.value = '';
-            if (urlEl) urlEl.value = '';
-            if (inlineAddLessonModal) inlineAddLessonModal.classList.add('hidden');
-
-            await loadLessons();
-
-            if (currentVideoFolderId) {
-                const targetCard = document.querySelector(`.folder-card[data-folder-id="${currentVideoFolderId}"] .folder-content-click`);
-                if (targetCard) targetCard.click();
-            }
-        } catch (err) {
-            alert('មានបញ្ហាក្នុងការបន្ថែមវីដេអូ: ' + err.message);
-        }
-    }
-
     // 🟢 Admin: បន្ថែមសាលារៀនថ្មី (New School)
     const formAddSchool = document.getElementById('form-add-school');
     if (formAddSchool) {
@@ -1732,6 +1667,7 @@ function setupEvents() {
             infoModal.classList.remove('hidden');
         };
     }
+
     // 🛡️ ចាប់ Error ទាំងអស់ឱ្យលោត Alert ដើម្បីងាយមើលពេល Deploy
     window.addEventListener('error', (event) => {
         if (event && event.message) {
@@ -1744,7 +1680,7 @@ function setupEvents() {
         alert('Promise Error: ' + msg);
     });
 
-    // 🟢 Fallback ចាប់ប៊ូតុង "រក្សាទុកវីដេអូ" គ្រប់ករណី
+    // 🟢 ចាប់ប៊ូតុង "រក្សាទុកវីដេអូ" ក្នុង Modal បន្ថែមវីដេអូមេរៀនថ្មី
     document.addEventListener('click', async (e) => {
         const btn = e.target.closest('button');
         if (!btn) return;
@@ -1754,18 +1690,31 @@ function setupEvents() {
         e.preventDefault();
         e.stopPropagation();
 
-        const modal = btn.closest('.fixed') || document.getElementById('inline-add-lesson-modal') || document;
-        const inputs = Array.from(modal.querySelectorAll('input:not([type="hidden"])'));
+        const modal =
+            btn.closest('.fixed') ||
+            document.getElementById('inline-add-lesson-modal') ||
+            document;
+
+        const visibleInputs = Array.from(modal.querySelectorAll('input')).filter((inp) => {
+            const type = String(inp.type || '').toLowerCase();
+            if (type === 'hidden' || type === 'checkbox' || type === 'radio' || type === 'file') return false;
+            const rect = inp.getBoundingClientRect();
+            return rect.width > 0 && rect.height > 0;
+        });
 
         const titleEl =
             document.getElementById('inline-lesson-title') ||
             document.getElementById('lesson-title') ||
-            inputs[0];
+            visibleInputs[0] ||
+            null;
 
         const urlEl =
             document.getElementById('inline-lesson-video-url') ||
             document.getElementById('lesson-video-url') ||
-            inputs[1];
+            document.getElementById('inline-lesson-url') ||
+            document.getElementById('lesson-url') ||
+            visibleInputs.find((inp) => inp !== titleEl) ||
+            null;
 
         const openAddLessonBtn = document.getElementById('btn-open-add-lesson-modal');
         const subjectIdEl =
@@ -1775,7 +1724,7 @@ function setupEvents() {
         const title = titleEl ? String(titleEl.value || '').trim() : '';
         const videoUrl = urlEl ? String(urlEl.value || '').trim() : '';
         const subjectId =
-            (typeof currentVideoFolderId !== 'undefined' && currentVideoFolderId) ||
+            currentVideoFolderId ||
             (openAddLessonBtn && openAddLessonBtn.dataset.currentFolderId) ||
             (subjectIdEl && subjectIdEl.value) ||
             '';
@@ -1803,6 +1752,11 @@ function setupEvents() {
             if (urlEl) urlEl.value = '';
             if (modal && modal.classList) modal.classList.add('hidden');
             await loadLessons();
+
+            if (currentVideoFolderId) {
+                const targetCard = document.querySelector(`.folder-card[data-folder-id="${currentVideoFolderId}"] .folder-content-click`);
+                if (targetCard) targetCard.click();
+            }
         } catch (err) {
             alert('API Error (/lessons): ' + (err && err.message ? err.message : String(err)));
         }
