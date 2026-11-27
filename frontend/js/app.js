@@ -38,7 +38,7 @@ function getFolderPathName(subject, allList) {
     let path = [subject.name];
     let current = subject;
     while (current.parent_id !== null && current.parent_id !== undefined) {
-        let parent = allList.find(s => s.id === current.parent_id);
+        let parent = allList.find(s => Number(s.id) === Number(current.parent_id));
         if (parent) {
             path.unshift(parent.name);
             current = parent;
@@ -217,7 +217,7 @@ function resetGuestUI(guestView, userView, adminBtn) {
     });
 }
 
-// ៣. ទាញយកមេរៀនវីដេអូ (បិទមិនឱ្យមើលបើមិនទាន់ Login)[cite: 4]
+// ៣. ទាញយកមេរៀនវីដេអូ (បិទមិនឱ្យមើលបើមិនទាន់ Login)
 async function loadLessons() {
     const foldersGrid = document.getElementById('lesson-folders-grid');
     const videosView = document.getElementById('lesson-videos-view');
@@ -250,17 +250,26 @@ async function loadLessons() {
         const subjects = await API.request('/subjects'); 
         const lessons = await API.getLessons();
 
-        if (!subjects || !Array.isArray(subjects) || !lessons) return;
+        if (!subjects || !Array.isArray(subjects) || !Array.isArray(lessons)) {
+            foldersGrid.innerHTML = `<div class="col-span-3 text-center py-10 text-red-500">ទិន្នន័យ subjects ឬ lessons មិនត្រឹមត្រូវ</div>`;
+            return;
+        }
+
+        const isVideoType = (s) => String(s.type || '').trim().toLowerCase() === 'video';
+        const hasNoParent = (s) => s.parent_id === null || s.parent_id === undefined || String(s.parent_id).trim() === '';
 
         if (lessonSelectSubject) {
-            const videoSubjects = subjects.filter(s => s.type === 'video');
+            const videoSubjects = subjects.filter(isVideoType);
             lessonSelectSubject.innerHTML = `<option value="">-- ជ្រើសរើសមុខវិជ្ជាវីដេអូ --</option>` + videoSubjects.map(sub => {
                 return `<option value="${sub.id}">${sub.name} (ID: ${sub.id})</option>`;
             }).join('');
         }
 
-        const videoFolders = subjects.filter(s => s.parent_id === null && s.type === 'video');
-        const videoChildSubjects = subjects.filter(s => s.parent_id !== null && s.type === 'video');
+        const videoFolders = subjects.filter(s => hasNoParent(s) && isVideoType(s));
+        const videoChildSubjects = subjects.filter(s => !hasNoParent(s) && isVideoType(s));
+
+        foldersGrid.classList.remove('hidden');
+        if (videosView) videosView.classList.add('hidden');
 
         if (!videoFolders.length) {
             foldersGrid.innerHTML = `<div class="col-span-3 text-center py-10 text-slate-400">មិនទាន់មាន Folder មេសម្រាប់វីដេអូនៅឡើយទេ</div>`;
@@ -270,9 +279,12 @@ async function loadLessons() {
         const isAdmin = user && (String(user.role).toUpperCase() === 'ADMIN' || String(user.role).toUpperCase() === 'TEACHER');
 
         foldersGrid.innerHTML = videoFolders.map(folder => {
-            const childrenIds = videoChildSubjects.filter(s => s.parent_id === folder.id).map(s => s.id);
-            const allIds = [folder.id, ...childrenIds];
-            const lessonCount = lessons.filter(l => allIds.includes(l.subject_id)).length;
+            const folderIdNum = Number(folder.id);
+            const childrenIds = videoChildSubjects
+                .filter(s => Number(s.parent_id) === folderIdNum)
+                .map(s => Number(s.id));
+            const allIds = [folderIdNum, ...childrenIds];
+            const lessonCount = lessons.filter(l => allIds.includes(Number(l.subject_id))).length;
 
             return `
                 <div class="folder-card bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm hover:shadow-md transition relative flex flex-col items-center text-center" data-folder-id="${folder.id}" data-folder-name="${folder.name}">
@@ -294,7 +306,7 @@ async function loadLessons() {
         document.querySelectorAll('.folder-content-click').forEach((item, idx) => {
             item.onclick = () => {
                 const card = document.querySelectorAll('.folder-card')[idx];
-                const folderId = parseInt(card.dataset.folderId);
+                const folderId = Number(card.dataset.folderId);
                 const folderName = card.dataset.folderName;
 
                 foldersGrid.classList.add('hidden');
@@ -306,9 +318,11 @@ async function loadLessons() {
                     openAddLessonBtn.dataset.currentFolderId = folderId;
                 }
 
-                const childrenIds = videoChildSubjects.filter(s => s.parent_id === folderId).map(s => s.id);
+                const childrenIds = videoChildSubjects
+                    .filter(s => Number(s.parent_id) === folderId)
+                    .map(s => Number(s.id));
                 const allIds = [folderId, ...childrenIds];
-                const folderLessons = lessons.filter(l => allIds.includes(l.subject_id));
+                const folderLessons = lessons.filter(l => allIds.includes(Number(l.subject_id)));
 
                 if (!folderLessons.length) {
                     videosGrid.innerHTML = `<div class="col-span-3 text-center py-10 text-slate-400">មិនទាន់មានវីដេអូនៅក្នុង Folder នេះទេ</div>`;
@@ -345,7 +359,7 @@ async function loadLessons() {
                         if (editSubjectSelect) {
                             try {
                                 const subs = await API.request('/subjects');
-                                const videoSubs = subs.filter(s => s.type === 'video');
+                                const videoSubs = subs.filter(isVideoType);
                                 editSubjectSelect.innerHTML = `<option value="">-- ជ្រើសរើសមុខវិជ្ជាវីដេអូ --</option>` + videoSubs.map(sub => {
                                     return `<option value="${sub.id}">${sub.name} (ID: ${sub.id})</option>`;
                                 }).join('');
@@ -424,6 +438,7 @@ async function loadLessons() {
         }
     } catch (e) { 
         console.error('Error loading lessons:', e.message); 
+        foldersGrid.innerHTML = `<div class="col-span-3 text-center py-10 text-red-500">មានបញ្ហាក្នុងការទាញមេរៀន: ${e.message}</div>`;
     }
 }
 
@@ -500,7 +515,7 @@ async function loadQCMSubjects() {
             schoolIdSelect.innerHTML = `<option value="">-- ជ្រើសរើសសាលា --</option>` + schools.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
         }
 
-        const qcmOnlySubjects = subjects.filter(s => s.type === 'qcm');
+        const qcmOnlySubjects = subjects.filter(s => String(s.type || '').trim().toLowerCase() === 'qcm');
 
         const qcmParentOptions = qcmOnlySubjects.map(s => {
             const fullNamePath = getFolderPathName(s, qcmOnlySubjects);
@@ -523,8 +538,8 @@ async function loadQCMSubjects() {
                 const schoolName = card.dataset.schoolName;
                 currentSchoolFilter = schoolName;
 
-                const schoolData = schools.find(s => s.id === schoolId);
-                let cleanLogo = schoolData.logo_url || '🏫';
+                const schoolData = schools.find(s => Number(s.id) === schoolId);
+                let cleanLogo = (schoolData && schoolData.logo_url) || '🏫';
                 if (cleanLogo.startsWith('http') || cleanLogo.startsWith('data:image')) {
                     currentSchoolLogo.innerHTML = `<img src="${cleanLogo}" class="w-10 h-10 object-contain rounded-lg">`;
                     currentSchoolLogo.className = 'w-10 h-10';
@@ -591,7 +606,7 @@ function renderSubjectGrid(allSubjects, schoolId, yearFilter, getParentId) {
     const grid = document.getElementById('qcm-subjects-grid');
     if (!grid) return;
 
-    let filteredSubjects = allSubjects.filter(s => s.type === 'qcm');
+    let filteredSubjects = allSubjects.filter(s => String(s.type || '').trim().toLowerCase() === 'qcm');
 
     if (schoolId) {
         filteredSubjects = filteredSubjects.filter(s => {
@@ -615,7 +630,7 @@ function renderSubjectGrid(allSubjects, schoolId, yearFilter, getParentId) {
                 );
                 return nameMatch || descMatch || hasMatchingChild;
             } else {
-                const parentFolder = allSubjects.find(p => p.id === getParentId(s));
+                const parentFolder = allSubjects.find(p => Number(p.id) === getParentId(s));
                 const parentMatch = parentFolder && (
                     (parentFolder.name && parentFolder.name.toUpperCase().includes(yearFilter.toUpperCase())) ||
                     (parentFolder.description && parentFolder.description.toUpperCase().includes(yearFilter.toUpperCase()))
@@ -635,7 +650,7 @@ function renderSubjectGrid(allSubjects, schoolId, yearFilter, getParentId) {
     let htmlContent = '';
 
     rootFolders.forEach((rootFolder) => {
-        const level1Children = allSubjects.filter(s => getParentId(s) === parseInt(rootFolder.id) && s.type === 'qcm');
+        const level1Children = allSubjects.filter(s => getParentId(s) === parseInt(rootFolder.id) && String(s.type || '').trim().toLowerCase() === 'qcm');
 
         htmlContent += `
             <div class="col-span-1 md:col-span-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm mb-4">
@@ -655,7 +670,7 @@ function renderSubjectGrid(allSubjects, schoolId, yearFilter, getParentId) {
 
         if (level1Children.length > 0) {
             level1Children.forEach(l1Child => {
-                const level2Children = allSubjects.filter(s => getParentId(s) === parseInt(l1Child.id) && s.type === 'qcm');
+                const level2Children = allSubjects.filter(s => getParentId(s) === parseInt(l1Child.id) && String(s.type || '').trim().toLowerCase() === 'qcm');
 
                 if (level2Children.length > 0) {
                     htmlContent += `
@@ -673,7 +688,7 @@ function renderSubjectGrid(allSubjects, schoolId, yearFilter, getParentId) {
                             
                             <div id="subfolder-container-${l1Child.id}" class="hidden space-y-3 pt-3 mt-3 border-t border-slate-200 dark:border-slate-700">
                                 ${level2Children.map(l2Child => {
-                                    const grandChildren = allSubjects.filter(s => getParentId(s) === parseInt(l2Child.id) && s.type === 'qcm');
+                                    const grandChildren = allSubjects.filter(s => getParentId(s) === parseInt(l2Child.id) && String(s.type || '').trim().toLowerCase() === 'qcm');
                                     
                                     if (grandChildren.length > 0) {
                                         return `
@@ -750,7 +765,7 @@ function renderSubjectGrid(allSubjects, schoolId, yearFilter, getParentId) {
             };
         }
 
-        const level1Children = allSubjects.filter(s => getParentId(s) === parseInt(folder.id) && s.type === 'qcm');
+        const level1Children = allSubjects.filter(s => getParentId(s) === parseInt(folder.id) && String(s.type || '').trim().toLowerCase() === 'qcm');
         level1Children.forEach(l1Child => {
             const subBtn = document.getElementById(`subfolder-btn-${l1Child.id}`);
             const subCont = document.getElementById(`subfolder-container-${l1Child.id}`);
@@ -764,7 +779,7 @@ function renderSubjectGrid(allSubjects, schoolId, yearFilter, getParentId) {
                 };
             }
 
-            const level2Children = allSubjects.filter(s => getParentId(s) === parseInt(l1Child.id) && s.type === 'qcm');
+            const level2Children = allSubjects.filter(s => getParentId(s) === parseInt(l1Child.id) && String(s.type || '').trim().toLowerCase() === 'qcm');
             level2Children.forEach(l2Child => {
                 const deepBtn = document.getElementById(`deepfolder-btn-${l2Child.id}`);
                 const deepCont = document.getElementById(`deepfolder-container-${l2Child.id}`);
@@ -938,7 +953,7 @@ function renderAdminSubjectsList(subjects, getParentId) {
             ? `<span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-md ml-2">សាលា ID: ${folder.school_id}</span>` 
             : `<span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md ml-2">គ្មានសាលា</span>`;
             
-        const typeBadge = folder.type === 'video'
+        const typeBadge = String(folder.type || '').trim().toLowerCase() === 'video'
             ? `<span class="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded-md ml-2">វីដេអូ</span>`
             : `<span class="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md ml-2">QCM</span>`;
 
