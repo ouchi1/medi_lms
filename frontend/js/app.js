@@ -256,7 +256,12 @@ async function loadLessons() {
         }
 
         const isVideoType = (s) => String(s.type || '').trim().toLowerCase() === 'video';
-        const hasNoParent = (s) => s.parent_id === null || s.parent_id === undefined || String(s.parent_id).trim() === '';
+        const hasNoParent = (s) => {
+            const pid = s.parent_id;
+            if (pid === null || pid === undefined) return true;
+            const str = String(pid).trim().toLowerCase();
+            return str === '' || str === 'null' || str === '0';
+        };
 
         if (lessonSelectSubject) {
             const videoSubjects = subjects.filter(isVideoType);
