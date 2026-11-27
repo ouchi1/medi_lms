@@ -1647,72 +1647,89 @@ function setupEvents() {
             infoModal.classList.remove('hidden');
         };
     }
-    // 🟢 Admin: បន្ថែមវីដេអូមេរៀនថ្មី (Add Lesson Video)
+    // 🟢 Admin: បន្ថែមវីដេអូមេរៀនថ្មី (Add Lesson Video) - គាំទ្រទាំង form submit និង button click
     const inlineAddLessonModal = document.getElementById('inline-add-lesson-modal');
+
+    async function handleAddLessonSubmit(e) {
+        if (e && e.preventDefault) e.preventDefault();
+
+        const titleEl =
+            document.getElementById('inline-lesson-title') ||
+            document.getElementById('lesson-title') ||
+            (inlineAddLessonModal && inlineAddLessonModal.querySelector('input[name="title"]')) ||
+            (inlineAddLessonModal && inlineAddLessonModal.querySelector('input[type="text"]'));
+
+        const urlEl =
+            document.getElementById('inline-lesson-video-url') ||
+            document.getElementById('lesson-video-url') ||
+            (inlineAddLessonModal && inlineAddLessonModal.querySelector('input[name="video_url"]')) ||
+            (inlineAddLessonModal && inlineAddLessonModal.querySelectorAll('input[type="text"]')[1]) ||
+            (inlineAddLessonModal && inlineAddLessonModal.querySelector('input[type="url"]'));
+
+        const subjectIdEl =
+            document.getElementById('inline-lesson-subject-id') ||
+            document.getElementById('lesson-select-subject') ||
+            (inlineAddLessonModal && inlineAddLessonModal.querySelector('select'));
+
+        const openAddLessonBtn = document.getElementById('btn-open-add-lesson-modal');
+        const title = titleEl ? titleEl.value.trim() : '';
+        const videoUrl = urlEl ? urlEl.value.trim() : '';
+        const subjectId =
+            (subjectIdEl && subjectIdEl.value) ||
+            (openAddLessonBtn && openAddLessonBtn.dataset.currentFolderId) ||
+            '';
+
+        if (!title || !videoUrl || !subjectId) {
+            return alert('សូមបំពេញចំណងជើង, Link YouTube និង Folder មុខវិជ្ជាឱ្យបានគ្រប់គ្រាន់!');
+        }
+
+        const user = JSON.parse(localStorage.getItem('medi_user') || 'null');
+
+        try {
+            const res = await API.request('/lessons', {
+                method: 'POST',
+                body: JSON.stringify({
+                    title,
+                    subjectId: Number(subjectId),
+                    videoUrl,
+                    videoType: 'embed',
+                    createdBy: user && user.id ? user.id : 1
+                })
+            });
+
+            alert(res.message || 'បន្ថែមវីដេអូមេរៀនជោគជ័យ!');
+            if (titleEl) titleEl.value = '';
+            if (urlEl) urlEl.value = '';
+            if (inlineAddLessonModal) inlineAddLessonModal.classList.add('hidden');
+            await loadLessons();
+        } catch (err) {
+            alert('មានបញ្ហាក្នុងការបន្ថែមវីដេអូ: ' + err.message);
+        }
+    }
+
     const formAddLesson =
         document.getElementById('form-add-lesson') ||
         document.getElementById('inline-form-add-lesson') ||
         (inlineAddLessonModal ? inlineAddLessonModal.querySelector('form') : null);
 
     if (formAddLesson) {
-        formAddLesson.onsubmit = async (e) => {
-            e.preventDefault();
+        formAddLesson.onsubmit = handleAddLessonSubmit;
+    }
 
-            const titleEl =
-                document.getElementById('inline-lesson-title') ||
-                document.getElementById('lesson-title') ||
-                formAddLesson.querySelector('input[name="title"]') ||
-                formAddLesson.querySelector('input[type="text"]');
+    if (inlineAddLessonModal) {
+        const submitLessonBtn =
+            document.getElementById('btn-save-inline-lesson') ||
+            document.getElementById('btn-add-lesson-submit') ||
+            inlineAddLessonModal.querySelector('button[type="submit"]') ||
+            Array.from(inlineAddLessonModal.querySelectorAll('button')).find(btn =>
+                !btn.id.includes('close') && !btn.className.includes('close')
+            );
 
-            const urlEl =
-                document.getElementById('inline-lesson-video-url') ||
-                document.getElementById('lesson-video-url') ||
-                formAddLesson.querySelector('input[name="video_url"]') ||
-                formAddLesson.querySelectorAll('input[type="text"]')[1] ||
-                formAddLesson.querySelector('input[type="url"]');
-
-            const subjectIdEl =
-                document.getElementById('inline-lesson-subject-id') ||
-                document.getElementById('lesson-select-subject') ||
-                formAddLesson.querySelector('select');
-
-            const openAddLessonBtn = document.getElementById('btn-open-add-lesson-modal');
-            const title = titleEl ? titleEl.value.trim() : '';
-            const videoUrl = urlEl ? urlEl.value.trim() : '';
-            const subjectId =
-                (subjectIdEl && subjectIdEl.value) ||
-                (openAddLessonBtn && openAddLessonBtn.dataset.currentFolderId) ||
-                '';
-
-            if (!title || !videoUrl || !subjectId) {
-                return alert('សូមបំពេញចំណងជើង, Link YouTube និង Folder មុខវិជ្ជាឱ្យបានគ្រប់គ្រាន់!');
-            }
-
-            const user = JSON.parse(localStorage.getItem('medi_user') || 'null');
-
-            try {
-                const res = await API.request('/lessons', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        title,
-                        subjectId: Number(subjectId),
-                        videoUrl,
-                        videoType: 'embed',
-                        createdBy: user && user.id ? user.id : 1
-                    })
-                });
-
-                alert(res.message || 'បន្ថែមវីដេអូមេរៀនជោគជ័យ!');
-                formAddLesson.reset();
-                if (inlineAddLessonModal) inlineAddLessonModal.classList.add('hidden');
-                await loadLessons();
-            } catch (err) {
-                alert('មានបញ្ហាក្នុងការបន្ថែមវីដេអូ: ' + err.message);
-            }
-        };
+        if (submitLessonBtn && submitLessonBtn.type !== 'submit') {
+            submitLessonBtn.onclick = handleAddLessonSubmit;
+        }
     }
 }
-
 // 🟢 មុខងារគ្រប់គ្រង Dark Mode
 function setupDarkMode() {
     const themeToggleBtn = document.getElementById('btn-theme-toggle');
